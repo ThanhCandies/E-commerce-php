@@ -1,0 +1,37 @@
+.form-group.issue input,
+.form-group.issue select,
+.form-group.issue textarea,
+.form-group.error input,
+.form-group.error select,
+.form-group.error textarea,
+.form-group.error .vs-checkbox {
+  border-color: #EA5455;
+}
+
+.form-group.issue .help-block,
+.form-group.issue .help-inline,
+.form-group.issue i,
+.form-group.issue label,
+.form-group.issue span,
+.form-group.error .help-block,
+.form-group.error .help-inline,
+.form-group.error i,
+.form-group.error label,
+.form-group.error span {
+  color: #EA5455 !important;
+}
+
+.form-group .help-block ul {
+  padding-left: 0;
+}
+
+.form-group .help-block ul li {
+  list-style-type: none;
+  font-size: 0.875rem;
+  padding-top: 0.2rem;
+}
+
+.help-block {
+  position: absolute;
+  right: 0;
+}
