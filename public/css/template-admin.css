@@ -1,0 +1,202 @@
+@font-face {
+  font-family: feather;
+  src: url(../assets/fonts/feather/fonts/feather.eot?t=1525787366991);
+  src: url(../assets/fonts/feather/fonts/feather.eot?t=1525787366991#iefix) format("embedded-opentype"), url(../assets/fonts/feather/fonts/feather.woff?t=1525787366991) format("woff"), url(../assets/fonts/feather/fonts/feather.ttf?t=1525787366991) format("truetype"), url(../assets/fonts/feather/fonts/feather.svg?t=1525787366991#feather) format("svg");
+}
+html {
+  font-size: 14px;
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(34, 41, 47, 0);
+}
+
+html body {
+  height: 100%;
+  background: #F8F8F8;
+  direction: ltr;
+  font-family: "Montserrat", Helvetica, Arial, serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+body.menu__expanded .menu__container {
+  width: 260px;
+}
+body.menu__expanded .menu__container .navigation > li a:hover {
+  padding-left: 25px;
+}
+body.menu__expanded .menu__container .navigation > li ul li a:hover {
+  padding-left: 30px;
+}
+body.menu__collapsed .menu__container {
+  width: 80px;
+}
+body.menu__collapsed .menu__container .navigation > li a {
+  text-overflow: inherit;
+  padding-right: 15px;
+}
+body.menu__collapsed .menu__container .navigation > li a span {
+  opacity: 0;
+}
+body.menu__collapsed .menu__container .navigation > li a::after {
+  display: none;
+}
+body .menu__container {
+  z-index: 1031;
+  position: absolute;
+  height: 100%;
+  overflow: hidden;
+  transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+}
+body .menu__container.menu__container-shadow {
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.05);
+}
+body .menu__container.menu__container-light {
+  color: #626262;
+  background: #FFFFFF;
+}
+body .menu__container ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+body .menu__container div {
+  box-sizing: border-box;
+}
+body .menu__container .nav__header {
+  width: 260px;
+  height: 5rem;
+  position: relative;
+  padding: 0.35rem 1rem 0.3rem 1.64rem;
+  -webkit-transition: 300ms ease all;
+  transition: 300ms ease all;
+}
+body .menu__container .nav__header-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+}
+body .menu__container .nav__header .nav__item.left {
+  margin-right: auto !important;
+}
+body .menu__container .nav__header .nav__header-toggle i {
+  font-size: 1.4rem;
+}
+body .menu__container .navigation > li {
+  padding: 0 15px;
+  list-style: none;
+}
+body .menu__container .navigation > li ul li.active {
+  background: linear-gradient(118deg, #7367F0, rgba(115, 103, 240, 0.7));
+  border-radius: 4px;
+  box-shadow: 0 0 10px 1px rgba(115, 103, 240, 0.7);
+}
+body .menu__container .navigation > li ul li.active a {
+  color: #FFFFFF;
+}
+body .menu__container .navigation > li ul li > a {
+  padding: 10px 15px 10px 20px;
+  -webkit-transition: all 0.35s ease 0s !important;
+  transition: all 0.35s ease 0s !important;
+}
+body .menu__container .navigation > li.nav__item.active > a {
+  background: linear-gradient(118deg, #7367F0, rgba(115, 103, 240, 0.7));
+  box-shadow: 0 0 10px 1px rgba(115, 103, 240, 0.7);
+  color: #FFFFFF;
+  font-weight: 400;
+  border-radius: 4px;
+}
+body .menu__container .navigation > li.nav__item.nav__list > a::after {
+  font-family: "Font Awesome 5 Free" !important;
+  content: "\f105";
+  vertical-align: middle;
+  position: absolute;
+  font-weight: 900;
+  font-size: 1rem;
+  right: 10px;
+  top: 12px;
+  transition: transform 0.35s ease 0s !important;
+}
+body .menu__container .navigation > li.nav__item.nav__list-active > a {
+  color: #494949;
+  background: whitesmoke;
+  transition: transform 0.25s ease 0s, -webkit-transform 0.25s ease 0s;
+  border-radius: 6px;
+  margin-bottom: 7px;
+}
+body .menu__container .navigation > li.nav__item:not(.open) > ul {
+  display: none;
+}
+body .menu__container .navigation > li.nav__item.open > ul {
+  display: block;
+}
+body .menu__container .navigation > li.nav__item.open > a::after {
+  transform: rotate(90deg);
+}
+body .menu__container .navigation > li > a {
+  color: #565656;
+  padding: 10px 25px 10px 15px;
+  -webkit-transition: all 0.35s ease 0s !important;
+  transition: all 0.35s ease 0s !important;
+}
+body .menu__container .navigation > li > a i {
+  font-size: 1.1rem;
+  margin-right: 1rem;
+  vertical-align: middle;
+}
+body .menu__container .navigation > li > a i::before {
+  font-size: 1.429rem;
+}
+body .menu__container .navigation > li > a span {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  vertical-align: middle;
+}
+
+.navigation {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+}
+.navigation li {
+  position: relative;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.navigation li a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.45;
+  position: relative;
+}
+.navigation li a i {
+  margin-right: 1.38rem;
+}
+.feather {
+  font-family: feather !important;
+  speak: none;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*# sourceMappingURL=template-admin.css.map */

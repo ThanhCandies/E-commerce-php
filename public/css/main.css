@@ -50,7 +50,7 @@ ul li {
 }
 
 body {
-  height: 2000px;
+  /*height: 2000px;*/
 }
 
 a {
@@ -94,6 +94,7 @@ a.text-primary:hover {
 
 .container {
   /* max-width: 1170px; */
+  display:block;
   max-width: 835px;
   min-width: 270px;
   padding: 0 20px;
@@ -522,6 +523,87 @@ li.nav__dropdown ul li.media-list {
   column-gap: 25px;
 }
 
+.category__list{
+  margin-top:30px;
+}
+.category__list > h4 {
+  text-align: center;
+}
+
+.category__list .list__container{
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  column-gap: 17px;
+  row-gap: 22px;
+  padding-bottom: 36px;
+}
+
+.category__list .list__container .list__item {
+  height:143px;
+  width: 100%;
+  border-radius: 7px;
+  background: var(--bg-primary);
+  box-shadow: 0 0 20px var(--shadow-default);
+  position:relative;
+}
+.category__list .list__container .list__item h6{
+  position: absolute;
+  bottom: 12px;
+  width:100%;
+  text-align: center;
+}
+.category__list .list__container .list__item img{
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  padding: 10px 20px 40px 20px;
+}
+.product__container{
+  padding: 0 20px;
+  display: flex;
+  flex-direction: row;
+}
+
+.product__container .product__item {
+  width:190px;
+  height:210px;
+  background: var(--bg-primary);
+  box-shadow: 0 0 20px var(--shadow-default);
+  border-radius: 7px;
+  position: relative;
+  margin-right: 25px;
+}
+.product__container .product__item .product__image{
+  height:147px;
+  text-align: center;
+}
+.product__container .product__item p{
+  text-align: center;
+  line-height: 1.3rem;
+  margin-bottom: 6px;
+}
+.product__container .product__item .product__image img{
+  height:100%;
+}
+
+a.cart__add{
+  height:40px;
+  width: 40px;
+  background: var(--bg-primary);
+  box-shadow: 0 0 20px var(--shadow-default);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 1000px;
+  position: absolute;
+  right: 18px;
+  bottom: -17px;
+}
+
+footer{
+  height:300px
+}
+
 .filter .dropdown:nth-child(1) {
   z-index: 3;
 }
@@ -726,7 +808,7 @@ li.nav__dropdown ul li.media-list {
 
 .category__container .carousel {
   background: var(--bg-blue);
-  height: 285px;
+  /*height: 285px;*/
   width: 100%;
   border-radius: 7px;
   padding-left: 35px;
@@ -827,10 +909,13 @@ li.nav__dropdown ul li.media-list {
   .header .header__searchbar {
     min-width: 270px;
   }
-
+  .category__container .carousel{
+    height:285px;
+  }
   .nav {
     position: fixed;
-    display: block;
+    /*display: block;*/
+    display: none;
     top: 0;
     left: 0;
     bottom: 0;

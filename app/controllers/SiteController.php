@@ -13,12 +13,12 @@ class SiteController extends Controller
 	 * 
 	 * @return App\core\Response
 	 */
-	public function index()
+	public function index():string
 	{
-		return $this->renderSingle('index');
+		return $this->render('index');
 	}
 
-	public function create()
+	public function create():string
 	{
 		$params = ['name' => 'hello'];
 		return $this->render('contact', $params);

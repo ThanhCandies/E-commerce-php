@@ -2,80 +2,95 @@
 
 namespace App\core;
 
-use App\controllers\SiteController;
+use App\core\exception\NotFoundException;
+use App\core\middlewares\BaseMiddleware;
+use App\Route;
 
 class Router
 {
-	protected array $routes = [];
-	protected Request $request;
-	protected Response $response;
+    protected array $routes = [];
+    protected Request $request;
+    protected Response $response;
+    protected array $nameList = [];
 
-	function __construct(Request $request, Response $response)
-	{
-		$this->request = $request;
-		$this->response = $response;
-	}
+    function __construct(Request $request, Response $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+    }
 
-	public function get($path, $cb)
-	{
-		$this->routes['GET'][$path] = $cb;
-	}
-	public function post($path, $cb)
-	{
-		$this->routes['POST'][$path] = $cb;
-	}
+    /**
+     * @return array
+     */
+    public function getRoutes(): array
+    {
+        return $this->routes;
+    }
 
-	public function resolve()
-	{
-		$path = $this->request->getPath();
-		$method = $this->request->getMethod();
+    public function get($path, $cb): object
+    {
+        $this->routes['GET'][$path] = $cb;
+        return new Route($path);
+    }
 
-		$cb = $this->routes[$method][$path] ?? false;
-		if (!$cb) {
-			$this->response->setStatusCode(404);
-			return $this->renderViewOnly("_404",[]);
-		};
+    public function post($path, $cb): object
+    {
+        $this->routes['POST'][$path] = $cb;
+        return new Route($path);
+    }
+    public function put($path, $cb): object
+    {
+        $this->routes['PUT'][$path] = $cb;
+        return new Route($path);
+    }
+    public function path($path, $cb): object
+    {
+        $this->routes['PATH'][$path] = $cb;
+        return new Route($path);
+    }
+    public function delete($path, $cb): object
+    {
+        $this->routes['DELETE'][$path] = $cb;
+        return new Route($path);
+    }
 
-		if (is_string($cb)) {
-			return $this->renderView($cb);
-		}
-		if (is_array($cb)) {
-			Application::$app->controller = new $cb[0]();
-			$cb[0] = Application::$app->controller;
-		}
-		return call_user_func($cb, $this->request,$this->response);
-	}
+    public function setName($name, $path)
+    {
+        $this->nameList[$name] = $path;
+    }
+    public function getPath($name):string
+    {
+        return $this->nameList[$name]??'';
+    }
 
-	public function renderView($view, $params = [])
-	{
-		$layoutContent = $this->layoutContent();
-		$viewContent = $this->renderViewOnly($view, $params);
-		return str_replace('{{content}}', $viewContent, $layoutContent);
-	}
+    public function resolve()
+    {
+        $path = $this->request->getPath();
+        $method = $this->request->getMethod();
 
-	protected function layoutContent()
-	{
-		$layout = Application::$app->controller->layout;
-		ob_start();
-		include_once Application::$ROOT_DIR . "/app/views/layouts/$layout.php";
-		return ob_get_clean();
-	}
+        $cb = $this->routes[$method][$path] ?? false;
+        if (!$cb) {
+            throw new NotFoundException();
+        };
 
-	/**
-	 * Render only one view
-	 * 
-	 * @param string $view
-	 * @param string[]	@params
-	 */
+        if (is_string($cb)) {
+//            return Application::$app->view->renderView($cb);
+            return Application::$app->blade->render($cb);
+        }
+        if (is_array($cb)) {
+            /**
+             * @var Controller $controller
+             * @var BaseMiddleware $middleware
+             */
+            $controller = new $cb[0]();
+            Application::$app->controller = $controller;
+            $controller->action = $cb[1];
+            $cb[0] = Application::$app->controller;
 
-	public function renderViewOnly($view, $params)
-	{
-		foreach ($params as $key => $value) {
-			$$key = $value;
-		}
-
-		ob_start();
-		include_once Application::$ROOT_DIR . "/app/views/$view.php";
-		return ob_get_clean();
-	}
+            foreach ($controller->getMiddleware() as $middleware) {
+                $middleware->execute();
+            }
+        }
+        return call_user_func($cb, $this->request, $this->response);
+    }
 }

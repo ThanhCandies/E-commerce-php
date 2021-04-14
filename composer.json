@@ -19,6 +19,8 @@
 	},
 	"description": "Hello user",
 	"require": {
-		"vlucas/phpdotenv": "^5.3"
+		"vlucas/phpdotenv": "^5.3",
+		"jenssegers/blade": "^1.4",
+		"ext-json": "*"
 	}
 }

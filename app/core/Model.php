@@ -11,7 +11,8 @@ abstract class Model
 	public const RULE_MAX = "max";
 	public const RULE_UNIQUE = "unique";
 	public const RULE_MATCH = "match";
-	public bool $success = true;
+	protected bool $success = true;
+	protected array $errors = [];
 
 	public function loadData($data)
 	{
@@ -23,7 +24,6 @@ abstract class Model
 	}
 	abstract public function rules(): array;
 
-	public array $errors = [];
 
 	public function validate()
 	{
@@ -95,6 +95,22 @@ abstract class Model
 			self::RULE_UNIQUE => 'Record with this {field} already exists',
 		];
 	}
+
+    /**
+     * @return array
+     */
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuccess(): bool
+    {
+        return $this->success;
+    }
 
 	public function hasError($attribute)
 	{

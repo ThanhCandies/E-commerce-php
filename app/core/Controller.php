@@ -3,25 +3,30 @@
 namespace App\core;
 
 use App\core\Application;
+use App\core\middlewares\BaseMiddleware;
 
 class Controller
 {
-	public string $layout = "main";
+    public string $layout = "main";
+    public string $header = "default";
+    public string $footer = "default";
+    public string $action = '';
+    /**
+     * @var App\core\middlewares\BaseMiddleware[];
+     */
+    public array $middleware = [];
 
-	public function setLayout($layout)
-	{
-		$this->layout = $layout;
-	}
+    public function registerMiddleware(BaseMiddleware $middleware)
+    {
+        $this->middleware[] = $middleware;
+    }
 
-	protected function render($view, $params = [])
-	{
-		return Application::$app->route->renderView($view, $params);
-	}
-	
-	protected function renderSingle($view, $params = [])
-	{
-		return Application::$app->route->renderViewOnly($view, $params);
-	}
-	protected function authenticate(){
-	}
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
+    }
+    protected function render($view, $params=[]):string
+    {
+        return Application::$app->blade->render($view,$params);
+    }
 }

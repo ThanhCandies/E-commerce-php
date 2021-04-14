@@ -31,8 +31,12 @@ class Session
 		$_SESSION[$key] = $value;
 	}
 
+    /**
+     * @param $key
+     * @return false|string
+     */
 	public function get($key)
-	{
+    {
 		return $_SESSION[$key] ?? false;
 	}
 

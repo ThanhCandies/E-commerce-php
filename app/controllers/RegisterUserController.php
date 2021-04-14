@@ -13,9 +13,8 @@ class RegisterUserController extends Controller
 
 	public function create()
 	{
-		$this->setLayout('auth');
-		return $this->render('pages/register');
-	}
+        return $this->render('pages.auth.register');
+    }
 
 	public function store(Request $request)
 	{
@@ -26,10 +25,10 @@ class RegisterUserController extends Controller
 		if ($user->validate() && $user->save()) {
 
 			$role = $user->role ?? 'user';
-			return json_encode(["success" => $user->success, "redirect" => $role === 'user' ? "/" : "/admin"]);
+			return json_encode(["success" => $user->isSuccess(), "redirect" => $role === 'user' ? "/" : "/admin"]);
 		}
 
-		return json_encode(["success" => $user->success, "err" => $user->errors]);
+		return json_encode(["success" => $user->isSuccess(), "err" => $user->getErrors()]);
 
 	}
 }
