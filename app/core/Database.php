@@ -39,9 +39,9 @@ class Database
 			}
 			require_once Application::$ROOT_DIR . '/app/migrations/' . $migration;
 			$className = pathinfo($migration, PATHINFO_FILENAME);
-			$intance = new $className();
+			$instance = new $className();
 			$this->log("Applying migration $migration");
-			$intance->up();
+			$instance->up();
 			$this->log("Applied migration $migration");
 			$newMigrations[] = $migration;
 		};

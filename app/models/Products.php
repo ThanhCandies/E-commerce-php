@@ -4,10 +4,16 @@
 namespace App\models;
 
 
-use App\core\Model;
+use App\core\DbModel;
+use JetBrains\PhpStorm\ArrayShape;
 
-class Products extends Model
+class Products extends DbModel
 {
+    public int|null $id = 0;
+    public string $name = '';
+    public bool $published = false;
+    public int $price = 0;
+    public int|object|null $category = 0;
 
     public static function tableName(): string
     {
@@ -16,7 +22,7 @@ class Products extends Model
 
     public function attributes(): array
     {
-        return [];
+        return ['name', 'published', 'price'];
     }
 
     public static function primaryKey(): string
@@ -24,10 +30,10 @@ class Products extends Model
         return 'id';
     }
 
-    public function rules(): array
+    #[ArrayShape(['name' => "array"])] public function rules(): array
     {
         return [
-            'name'=>[self::RULE_REQUIRED,[self::RULE_UNIQUE,'class'=>self::class]]
+            'name' => [self::RULE_REQUIRED, [self::RULE_UNIQUE, 'class' => self::class]]
         ];
     }
 }

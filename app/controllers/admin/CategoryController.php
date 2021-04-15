@@ -4,6 +4,8 @@
 namespace App\controllers\admin;
 
 
+use App\models\Category;
+
 class CategoryController extends \App\core\Controller
 {
 
@@ -15,6 +17,7 @@ class CategoryController extends \App\core\Controller
     }
     public function index():string
     {
+        $categories = Category::findAll();
         return $this->render('pages.admin.category');
     }
 

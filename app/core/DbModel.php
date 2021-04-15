@@ -14,7 +14,7 @@ abstract class DbModel extends Model
      * @param $attr
      * @return false|string|int|
      */
-    public function getAttr($attr)
+    public function getAttr($attr): bool|int|string
     {
         return $this->{$attr} ?? false;
     }
@@ -22,25 +22,38 @@ abstract class DbModel extends Model
     /**
      * @return bool
      */
-    public function save()
+    public function save(): bool
     {
-        $tableName = $this->tableName();
-        $attributes = $this->attributes();
-        $params = array_map(fn($attr) => ":$attr", $attributes);
-        $statement = self::prepare("INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(",", $params) . ");");
+        try {
+            $tableName = $this->tableName();
+            $attributes = $this->attributes();
+            $params = array_map(fn($attr) => ":$attr", $attributes);
+            $statement = self::prepare("INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(",", $params) . ");");
 
-        foreach ($attributes as $attribute) {
-            $statement->bindValue(":$attribute", $this->{$attribute});
+            foreach ($attributes as $attribute) {
+                $param_type = match (gettype($this->{$attribute})) {
+                    "boolean" => \PDO::PARAM_BOOL,
+                    "integer" => \PDO::PARAM_INT,
+                    "string" => \PDO::PARAM_STR,
+                    default => \PDO::PARAM_NULL
+                };
+//                dump(["$attribute"=>$param_type,"type"=>gettype($attribute),"value"=>$this->{$attribute}]);
+                $statement->bindValue(":$attribute", $this->{$attribute}, $param_type);
+            }
+//            dd('stop');
+            $statement->execute();
+            return true;
+        } catch (\Exception $exception) {
+            dd($exception);
         }
-        $statement->execute();
-        return true;
     }
 
-    public function update($value)
+    public function update($val = null): bool
     {
         $tableName = $this->tableName();
         $attributes = $this->attributes();
         $primaryKey = $this->primaryKey();
+        $value = $val ?? $this->{$primaryKey};
 
         $params = array_map(fn($attr) => "$attr = :$attr");
 
@@ -53,21 +66,23 @@ abstract class DbModel extends Model
         return true;
     }
 
-    public function delete($value)
+    public function delete($val = null): bool
     {
         $tableName = $this->tableName();
         $primaryKey = $this->primaryKey();
+        $value = $val ?? $this->{$primaryKey};
+
         $statement = self::prepare("DELETE FROM $tableName WHERE $primaryKey = $value;");
         $statement->execute();
         return true;
     }
 
-    public static function prepare($sql)
+    public static function prepare($sql): bool|\PDOStatement
     {
         return Application::$app->db->pdo->prepare($sql);
     }
 
-    public static function findOne(array $where, $options = "AND")
+    public static function findOne(array $where, $options = "AND", array $props = [])
     {
         $tableName = static::tableName();
         $attributes = array_keys($where);
@@ -83,57 +98,34 @@ abstract class DbModel extends Model
         return $statement->fetchObject(static::class);
     }
 
-    public static function findAll(array $props = [])
+    public static function findAll($filter, array $props = []): array
     {
         /**
-         * @var $paginations array
+         * @var $pagination array
          */
         $tableName = static::tableName();
-        $paginations = Application::$app->request->getPagination();
+        $pagination = Application::$app->request->getPagination();
 
-
-        $stmt = self::prepare("SELECT COUNT(*) AS totalRecord FROM $tableName");
-        $stmt->execute();
-        $totalRecord = (int)$stmt->fetch()['totalRecord'];
-
-        $limit = $paginations['limit'];
-        $maxPages = ceil($totalRecord / $limit);
-        $page = $paginations['page'] > $maxPages ? $maxPages : $paginations['page'];
-        $offset = ($page - 1) * $limit;
-
-        $statement = self::prepare("SELECT * FROM $tableName LIMIT $limit OFFSET $offset");
-        $statement->execute();
-        $data = $statement->fetchAll(\PDO::FETCH_CLASS, static::class);
-
-        $hasMany = false;
-
-        if (!empty($props)) {
-            // Get roles
-
-
-            foreach ($data as $item) {
-                // role,
-                foreach ($props as $key) {
-                    $foreignTable = $item::foreignKey()[$key];
-
-                    $sql = "SELECT * FROM " . $foreignTable::tableName() . " WHERE " . $foreignTable::primaryKey() . " = " . $item->{$key};
-                    $statement = self::prepare($sql);
-                    $statement->execute();
-
-                    if ($hasMany) {
-                        $item->{$key} = $statement->fetchAll(\PDO::FETCH_CLASS, $foreignTable);
-                    } else {
-                        $item->{$key} = $statement->fetchObject($foreignTable);
-                    }
-                }
-            }
+        $filter = '';
+        if ((int)$pagination['limit'] !== 0) {
+            $max = $pagination['limit'] > 100 ? 100 : $pagination['limit'];
+            $filter = $filter . "LIMIT " . $max;
+        }
+        if ((int)$pagination['page'] && $pagination['limit'] !== 0) {
+            $offset = ($pagination['page'] - 1) * $pagination['limit'];
+            $filter = $filter . "OFFSET " . $offset;
         }
 
-        return ['data' => $data,
-            'limit' => $limit,
-            'totalRecord' => $totalRecord,
-            'page' => $page,
-            'maxPages' => $maxPages
-        ];
+        $statement = self::prepare("SELECT * FROM $tableName " . $filter);
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_CLASS, static::class);
+    }
+
+    public static function count($filter): int
+    {
+        $tableName = static::tableName();
+        $stmt = self::prepare("SELECT COUNT(*) AS totalRecord FROM $tableName");
+        $stmt->execute();
+        return (int)$stmt->fetch()['totalRecord'];
     }
 }

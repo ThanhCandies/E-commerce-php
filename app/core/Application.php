@@ -32,6 +32,7 @@ class Application
 
         self::$ROOT_DIR = $rootPath;
         self::$app = $this;
+        putenv('TMPDIR='.__DIR__);
 
         $this->request = new Request();
         $this->response = new Response();
@@ -100,7 +101,7 @@ class Application
         try {
             echo $this->route->resolve();
         } catch (\Exception $exception) {
-//            dd($this->route);
+//            dd(phpinfo());
             // Throw error when has error while running;
             echo $this->blade->render('pages._error', ['exception' => $exception]);
         }

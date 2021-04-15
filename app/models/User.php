@@ -25,7 +25,7 @@ class User extends UserModel
         return 'users';
     }
 
-    public function save()
+    public function save():bool
     {
         $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         return parent::save();

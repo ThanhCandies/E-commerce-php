@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
+ini_set('upload_tmp_dir',__DIR__);
 
 use App\controllers\AuthController;
 use App\controllers\RegisterUserController;
@@ -10,7 +11,7 @@ use App\controllers\admin\ProductController;
 use App\models\User;
 use App\controllers\admin\CategoryController;
 use App\controllers\admin\UsersController;
-
+use App\controllers\admin\ImageController;
 
 if (! function_exists('route')) {
     function route(string $name):string
@@ -59,10 +60,15 @@ try {
 	/** Admin home pages */
 	$app->route->get('/admin',[AdminController::class,'index'])->name('admin.home');
 
+	/** Images upload */
+    $app->route->post('/upload/images',[ImageController::class,'store']);
+
     /** Admin products Page   */
 	$app->route->get('/admin/products',[ProductController::class,'index'])->name('admin.products');
-    $app->route->post('/admin/products',[ProductController::class,'store']);
-    $app->route->put('/admin/products',[ProductController::class,'update']);
+	$app->route->get('/api/products',[ProductController::class,'getAll']); // Get list products
+
+    $app->route->post('/admin/products',[ProductController::class,'store'])->name('products.create'); // Create new products
+    $app->route->put('/admin/products',[ProductController::class,'update']); //
     $app->route->delete('/admin/products',[ProductController::class,'destroy']);
 	/** Admin list users Page */
 

@@ -1,8 +1,6 @@
 <?php
 
-
-namespace App\migrations;
-
+use App\core\Application;
 
 class m0006_create_images_tables extends \App\core\middlewares\Migration
 {
@@ -12,13 +10,12 @@ class m0006_create_images_tables extends \App\core\middlewares\Migration
         $db = Application::$app->db;
         $SQL = "CREATE TABLE IF NOT EXISTS images( 
             id INT AUTO_INCREMENT NOT NULL,
-            original_name varchar(255) NOT NULL UNIQUE,
-            image varchar(255),
-            published boolean default false,
+            original_name varchar(255) NOT NULL,
+           	url varchar(255),
+            size int default 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY(id),
-            CONSTRAINT FK_CategoryProduct FOREIGN KEY (category_id) REFERENCES categories(id)
+            update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY(id)
         ) ENGINE=INNODB;";
         $db->pdo->exec($SQL);
     }
@@ -26,7 +23,7 @@ class m0006_create_images_tables extends \App\core\middlewares\Migration
     public function down()
     {
         $db = Application::$app->db;
-        $SQL = "DROP TABLE products";
+        $SQL = "DROP TABLE images";
         $db->pdo->exec($SQL);
     }
 }

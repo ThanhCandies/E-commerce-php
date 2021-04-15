@@ -10,3 +10,5 @@ public-demo
 public/app-assets/images
 public/assets/ico
 public/assets/images
+xampp/tmp/*
+xampp/img/*

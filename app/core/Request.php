@@ -7,7 +7,6 @@ class Request
 
     public function getPath()
     {
-//        dd($_SERVER)
         $path = $_SERVER['REQUEST_URI'] ?? '\/';
         $position = stripos($path, '?');
         if (!$position) {
@@ -16,12 +15,18 @@ class Request
         return $path = substr($path, 0, $position);
     }
 
-    public function getMethod()
+    public function getFile():array
+    {
+
+        return $_FILES['images'];
+    }
+
+    public function getMethod(): string
     {
         return strtoupper($_SERVER['REQUEST_METHOD']);
     }
 
-    public function getBody()
+    public function getBody(): array
     {
         $body = [];
         if (isset($_SERVER["CONTENT_TYPE"])
@@ -48,22 +53,22 @@ class Request
 
     public function getPagination(): array
     {
-        $paginations = ["page" => 1, "limit" => 10];
+        $pagination = ["start" => 0, "length" => 10];
         $newPag = array();
 
         $params = $this->getBody();
-        foreach ($paginations as $key => $value) {
-            $newPag[$key] = is_numeric($params[$key]??false) ?(int) $params[$key] :(int) $value;
+        foreach ($pagination as $key => $value) {
+            $newPag[$key] = is_numeric($params[$key] ?? false) ? (int)$params[$key] : (int)$value;
         }
         return $newPag;
     }
 
-    public function isGet()
+    public function isGet(): bool
     {
         return $this->getMethod() === "GET";
     }
 
-    public function isPost()
+    public function isPost(): bool
     {
         return $this->getMethod() === "POST";
     }
