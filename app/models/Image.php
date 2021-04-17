@@ -35,7 +35,7 @@ class Image extends \App\core\DbModel
         return 'images';
     }
 
-    public function attributes(): array
+    public static function attributes(): array
     {
         return ['url', 'original_name', 'type', 'size'];
     }

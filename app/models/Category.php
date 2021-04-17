@@ -6,6 +6,7 @@ namespace App\models;
 
 class Category extends \App\core\DbModel
 {
+    public int|null $id = 0;
     public string $name ='';
     public string $descriptions = '';
     public $image='';
@@ -16,9 +17,9 @@ class Category extends \App\core\DbModel
         return 'categories';
     }
 
-    public function attributes(): array
+    public static function attributes(): array
     {
-       return ['name','description','image'];
+       return ['id','name','description','image'];
     }
 
     public static function primaryKey(): string

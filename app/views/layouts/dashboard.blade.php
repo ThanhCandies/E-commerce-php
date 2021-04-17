@@ -134,27 +134,27 @@ $path = Application::$app->request->getPath();
 		<div class="shadow-bottom"></div>
 		<div class="main-menu-content">
 			<ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
-				<li class="<?= $path===route('admin.home')?'active':'' ?>"><a href="{{route('admin.home')}}"><i class="feather icon-home"></i><span class="menu-item" data-i18n="Analytics">Analytics</span></a>
+				<li class="<?= $path===route('admin.home')?'active':'' ?> nav-item {{route('admin.home')?'':'disabled'}}"><a href="{{route('admin.home')}}"><i class="feather icon-home"></i><span class="menu-item" data-i18n="Analytics">Analytics</span></a>
 				</li>
 				<li class=" navigation-header"><span>Apps</span>
 				</li>
-				<li class="<?= $path===route('admin.users')?'active':'' ?> nav-item"><a href="{{route('admin.users')}}"><i class="fa fa-users"></i><span class="menu-item" data-i18n="List Users">List Users</span></a>
+				<li class="<?= $path===route('admin.users')?'active':'' ?> nav-item {{route('admin.users')?'':'disabled'}}"><a href="{{route('admin.users')}}"><i class="fa fa-users"></i><span class="menu-item" data-i18n="List Users">List Users</span></a>
 				</li>
-				<li class="<?= $path===route('admin.products')?'active':'' ?> nav-item"><a href="{{route('admin.products')}}"><i class="fa fa-shopping-bag"></i><span class="menu-item" data-i18n="Products">Products</span></a>
+				<li class="<?= $path===route('admin.products')?'active':'' ?> nav-item {{route('admin.products')?'':'disabled'}}"><a href="{{route('admin.products')}}"><i class="fa fa-shopping-bag"></i><span class="menu-item" data-i18n="Products">Products</span></a>
 				</li>
-				<li class="<?= $path===route('admin.categories')?'active':'' ?> nav-item"><a href="{{route('admin.categories')}}"><i class="fa fa-th"></i><span class="menu-item" data-i18n="Categories">Categories</span></a>
+				<li class="<?= $path===route('admin.categories')?'active':'' ?> nav-item {{route('admin.categories')?'':'disabled'}}"><a href="{{route('admin.categories')}}"><i class="fa fa-th"></i><span class="menu-item" data-i18n="Categories">Categories</span></a>
 				</li>
 				<li class=" navigation-header"><span>pages</span>
 				</li>
-				<li class="<?= $path===route('admin.profiles')?'active':'' ?> nav-item"><a href="{{route('admin.profiles')}}"><i class="feather icon-user"></i><span class="menu-title" data-i18n="Profile">Profile</span></a>
+				<li class="<?= $path===route('admin.profiles')?'active':'' ?> nav-item {{route('admin.profiles')?'':'disabled'}}"><a href="{{route('admin.profiles')}}"><i class="feather icon-user"></i><span class="menu-title" data-i18n="Profile">Profile</span></a>
 				</li>
-				<li class="<?= $path===route('admin.settings')?'active':'' ?> nav-item"><a href="{{route('admin.settings')}}"><i class="feather icon-settings"></i><span class="menu-title" data-i18n="Account Settings">Account Settings</span></a>
+				<li class="<?= $path===route('admin.settings')?'active':'' ?> nav-item {{route('admin.settings')?'':'disabled'}}"><a href="{{route('admin.settings')}}"><i class="feather icon-settings"></i><span class="menu-title" data-i18n="Account Settings">Account Settings</span></a>
 				</li>
-				<li class="<?= $path===route('admin.faq')?'active':'' ?> nav-item"><a href="{{route('admin.faq')}}"><i class="feather icon-help-circle"></i><span class="menu-title" data-i18n="FAQ">FAQ</span></a>
+				<li class="<?= $path===route('admin.faq')?'active':'' ?> nav-item {{route('admin.faq')?'':'disabled'}}"><a href="{{route('admin.faq')}}"><i class="feather icon-help-circle"></i><span class="menu-title" data-i18n="FAQ">FAQ</span></a>
 				</li>
-				<li class="<?= $path===route('admin.knowledgebase')?'active':'' ?> nav-item"><a href="{{route('admin.knowledgebase')}}"><i class="feather icon-info"></i><span class="menu-title" data-i18n="Knowledge Base">Knowledge Base</span></a>
+				<li class="<?= $path===route('admin.knowledgebase')?'active':'' ?> nav-item {{route('admin.knowledgebase')?'':'disabled'}}"><a href="{{route('admin.knowledgebase')}}"><i class="feather icon-info"></i><span class="menu-title" data-i18n="Knowledge Base">Knowledge Base</span></a>
 				</li>
-				<li class="<?= $path===route('admin.invoice')?'active':'' ?> nav-item"><a href="{{route('admin.invoice')}}"><i class="feather icon-file"></i><span class="menu-title" data-i18n="Invoice">Invoice</span></a>
+				<li class="<?= $path===route('admin.invoice')?'active':'' ?> nav-item {{route('admin.invoice')?'':'disabled'}}"><a href="{{route('admin.invoice')}}"><i class="feather icon-file"></i><span class="menu-title" data-i18n="Invoice">Invoice</span></a>
 				</li>
 			</ul>
 		</div>

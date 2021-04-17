@@ -11,24 +11,33 @@ class Products extends DbModel
 {
     public int|null $id = 0;
     public string $name = '';
-    public bool $published = false;
+    public bool|int|null $published = false;
     public int $price = 0;
     public int|object|null $category = 0;
+    public int|null|object $image = 0;
 
     public static function tableName(): string
     {
         return 'products';
     }
 
-    public function attributes(): array
+    public static function attributes(): array
     {
-        return ['name', 'published', 'price'];
+        return ['id','name', 'published', 'price','category'];
     }
 
     public static function primaryKey(): string
     {
         return 'id';
     }
+    public static function foreignKey():array
+    {
+        return ['category'=>Category::class];
+    }
+    public static function hasMany():array {
+        return ['category'=>Category::class];
+    }
+
 
     #[ArrayShape(['name' => "array"])] public function rules(): array
     {

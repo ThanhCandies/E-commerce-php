@@ -20,7 +20,7 @@ class Permission extends DbModel
     {
         return [];
     }
-    public function attributes(): array
+    public static function attributes(): array
     {
         return [];
     }

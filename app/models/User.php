@@ -44,7 +44,7 @@ class User extends UserModel
         ];
     }
 
-    public function attributes(): array
+    public static function attributes(): array
     {
         return ['firstname', 'lastname', 'email', 'password', 'username', 'status'];
     }

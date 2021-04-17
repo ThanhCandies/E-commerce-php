@@ -6,7 +6,7 @@ abstract class DbModel extends Model
 {
     abstract public static function tableName(): string;
 
-    abstract public function attributes(): array;
+    abstract public static function attributes(): array;
 
     abstract public static function primaryKey(): string;
 
@@ -39,8 +39,9 @@ abstract class DbModel extends Model
                 };
 //                dump(["$attribute"=>$param_type,"type"=>gettype($attribute),"value"=>$this->{$attribute}]);
                 $statement->bindValue(":$attribute", $this->{$attribute}, $param_type);
+//                dump($this->{$attribute});
             }
-//            dd('stop');
+//            dd($statement,$attributes);
             $statement->execute();
             return true;
         } catch (\Exception $exception) {
@@ -82,6 +83,16 @@ abstract class DbModel extends Model
         return Application::$app->db->pdo->prepare($sql);
     }
 
+    public static function where(string $attribute, string $value)
+    {
+        $tableName = static::tableName();
+        $statement = self::prepare("SELECT * FROM $tableName WHERE $attribute = $value;");
+        $statement->execute();
+
+        return $statement->fetchObject(static::class);
+    }
+
+
     public static function findOne(array $where, $options = "AND", array $props = [])
     {
         $tableName = static::tableName();
@@ -98,34 +109,105 @@ abstract class DbModel extends Model
         return $statement->fetchObject(static::class);
     }
 
-    public static function findAll($filter, array $props = []): array
+    public static function findAll(array $props = []): array
     {
         /**
+         *  Need refactor
          * @var $pagination array
          */
+
         $tableName = static::tableName();
+        $attributes = static::attributes();
+        $foreign = method_exists(static::class, 'foreignKey') ? static::foreignKey() : [];
+
         $pagination = Application::$app->request->getPagination();
+        $sortParams = $pagination['sort_by']??[];
 
-        $filter = '';
-        if ((int)$pagination['limit'] !== 0) {
-            $max = $pagination['limit'] > 100 ? 100 : $pagination['limit'];
-            $filter = $filter . "LIMIT " . $max;
-        }
-        if ((int)$pagination['page'] && $pagination['limit'] !== 0) {
-            $offset = ($pagination['page'] - 1) * $pagination['limit'];
-            $filter = $filter . "OFFSET " . $offset;
+        $attr = implode(",", array_map(fn($a) => "$tableName.$a", $attributes));
+        $arr = ["ASC", "DESC"];
+        $order = [];
+        $filter = $join = "";
+
+        // SORT
+        if (is_array($sortParams)) {
+            foreach ($sortParams as $key => $value) {
+//                dd(explode('.', $key)[0],$attributes,$foreignTable);
+                if (!in_array(strtoupper($value), $arr)) continue;
+                if (in_array($key, $attributes)) {
+                    $order[] = "$key $value";
+                }
+                $separate = explode('.', $key);
+                if (in_array($separate[0], $props)) {
+                    array_shift($separate);
+                    $table = $foreign[explode('.', $key)[0]]::tableName();
+                    $order[] = "$table.".implode(".",$separate)." $value";
+                }
+//                dd($order);
+            }
         }
 
-        $statement = self::prepare("SELECT * FROM $tableName " . $filter);
+        $orderQuery = empty($order) ? "" : " ORDER BY " . implode(" ,", $order);
+
+        if ((int)$pagination['length'] !== 0) {
+            $max = $pagination['length'] > 100 ? 100 : $pagination['length'];
+            $filter = $filter . " LIMIT " . $max;
+        }
+        if ((int)$pagination['page'] && $pagination['length'] !== 0) {
+            $offset = ($pagination['page'] - 1) * $pagination['length'];
+            $filter = $filter . " OFFSET " . $offset;
+        }
+
+        // Search;
+        $search = array_intersect_key(Application::$app->request->getBody(), array_flip($attributes));
+        $searchKey = array_keys($search);
+        $whereSql = empty($searchKey)?"":" WHERE " . implode(' OR ', array_map(fn($attr) => "$tableName.$attr REGEXP :$attr", $searchKey));
+
+        // JOIN Table
+        foreach ($props as $key) {
+            $class = $foreign[$key];
+            $table = $class::tableName();
+
+            $foreignTable[] = $table;
+            $join = $join . "INNER JOIN " . $table . " ON $tableName.$key=" . $table . "." . $class::primaryKey();
+        }
+
+        $statement = self::prepare("SELECT $attr FROM $tableName $join $whereSql $orderQuery" . $filter);
+        foreach ($search as $key => $value) {
+            $statement->bindValue(":$key", $value);
+        }
+
         $statement->execute();
-        return $statement->fetchAll(\PDO::FETCH_CLASS, static::class);
+        $data = $statement->fetchAll(\PDO::FETCH_CLASS, static::class);
+
+        // Search nested object;
+        foreach ($props as $key) {
+            $class = $foreign[$key];
+            $table = $class::tableName();
+
+            $unique = array_unique(array_column($data, $key));
+            $whereSQL = implode(" OR ", array_map(fn($att) => $class::primaryKey() . " = $att", $unique));
+
+            $stmt = self::prepare("SELECT * FROM $table WHERE $whereSQL");
+            $stmt->execute();
+            $nestedObj = $stmt->fetchAll(\PDO::FETCH_CLASS, $class);
+            foreach ($data as $instanceK => $instance) {
+                $instance->{$key} = $nestedObj[array_search($instance->{$key}, array_column($nestedObj, $class::primaryKey()))];
+            }
+        }
+
+        return $data;
     }
 
-    public static function count($filter): int
+    public static function count($filter = ''): int
     {
         $tableName = static::tableName();
-        $stmt = self::prepare("SELECT COUNT(*) AS totalRecord FROM $tableName");
+        $stmt = self::prepare("SELECT COUNT(*) FROM $tableName");
         $stmt->execute();
-        return (int)$stmt->fetch()['totalRecord'];
+//        $sql = "SELECT count(*) FROM `table` WHERE foo = ?";
+//        $result = $con->prepare($sql);
+//        $result->execute([$bar]);
+//        $number_of_rows = $result->fetchColumn();
+        return (int)$stmt->fetchColumn();
     }
+
 }

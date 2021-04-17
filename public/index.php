@@ -75,8 +75,12 @@ try {
     $app->route->get('/admin/users',[UsersController::class,'index'])->name('admin.users');
 
 	/** Admin Category */
-    $app->route->get('/admin/categories',[CategoryController::class,'index'])->name('admin.categories');
-    $app->route->post('/admin/categories',[CategoryController::class,'store']);
+//    $app->route->get('/admin/categories',[CategoryController::class,'index'])->name('admin.categories');
+//    $app->route->post('/admin/categories',[CategoryController::class,'store']);
+
+    /** Test case */
+
+    $app->route->get('/admin/test',[\App\controllers\admin\TestController::class,'index']);
 
     // Start run application;
 	$app->run();

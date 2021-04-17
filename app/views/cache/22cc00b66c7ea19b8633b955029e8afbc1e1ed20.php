@@ -152,10 +152,14 @@
                                     <div class="col-sm-12 data-field-col">
                                         <label for="data-category"> Category </label>
                                         <select class="form-control" id="data-category" name="category">
-                                            <option value="1">Audio</option>
-                                            <option value="2" Computers</option>
-                                            <option value="3">Fitness</option>
-                                            <option value="4">Appliance</option>
+                                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($category->id); ?>"><?php echo e($category->name); ?></option>
+
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+
+
+
                                         </select>
                                     </div>
                                     <div class="col-sm-12 data-field-col">

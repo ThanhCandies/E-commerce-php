@@ -18,7 +18,7 @@ class Role extends DbModel
             'role'=>[self::RULE_REQUIRED]
         ];
     }
-    public function attributes(): array
+    public static function attributes(): array
     {
         return ['role'];
     }

@@ -12,15 +12,44 @@ $(document).ready(function () {
 
 	var dataThumbView = $(".data-thumb-view")
 		.on('xhr.dt', function (e, settings, json, xhr) {
-			console.log(xhr.responseJSON)
+			console.log(e)
+			console.log(settings)
+			console.log(json)
+			if (!json) return toastr.error(xhr.responseText)
+			const text = xhr.responseJSON;
+			// console.log(text.stmt.queryString)
+			// toastr.error(xhr.responseText);
 		}).DataTable({
-			responsive: false,
+			responsive: true,
 			processing: true,
 			serverSide: true,
+			searchDelay: 1000,
 			ajax: {
-				url: '/api/products'
+				url: '/api/products',
+				contentType: 'application/json; charset=UTF-8',
+				data: function (params) {
+					// Handle request here!
+					params.page = params.start / params.length + 1;
+
+					params.name = params.search.value;
+
+
+					let obj = {};
+					params.sort_by = params.order.map(({ column, dir }) => {
+						const key = params.columns[column].data;
+						obj[key] = dir;
+					})
+					params.sort_by = obj
+					console.log(params)
+				},
+				dataSrc: function (json) {
+					// Handle response here
+					// console.log(json)
+					return json.data
+				},
 			},
-			order: [[2, "asc"]],
+
+			order: [[3, "asc"]],
 			dom:
 				'<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">ip>',
 			oLanguage: {
@@ -71,8 +100,11 @@ $(document).ready(function () {
 					defaultContent: '<img src="/app-assets/images/elements/apple-watch.png" alt="Img placeholder">'
 				},
 				{ data: 'name' },
-				{ data: 'category' },
-				{ data: null },
+				{ data: 'category.name' },
+				{
+					data: null,
+					defaultContent: "not setted"
+				},
 				{
 					data: 'published',
 					render: function (data, type, row) {
@@ -233,7 +265,7 @@ $(document).ready(function () {
 	});
 	$('#create_form').on('submit', function (e) {
 		e.preventDefault();
-		
+
 		// var myDropzone = Dropzone.forElement(".dropzone");
 		// myDropzone.options.method = "PUT"
 		$('#create_form input[name],#create_form select[name]').each(function (index, element) {
@@ -241,16 +273,31 @@ $(document).ready(function () {
 		})
 
 		$.ajax({
-			url:'/admin/products',
-			method:'POST',
+			url: '/admin/products',
+			method: 'POST',
 			processData: false,
 			contentType: false,
-			data:formData,
-			success:function (xml,status,xhr) {
-				toastr.success(xml,'success')
+			data: formData,
+			success: function (xml, status, xhr) {
+				const response = xhr.responseJSON;
+				if (!response.success) {
+					let message = '';
+					for (let key in response.error) {
+						message += response.error[key] + "<br>";
+					}
+
+					return toastr.error(message, 'Error')
+				};
+
+				toastr.success(xml, 'success');
+				$(".add-new-data").removeClass("show")
+				$(".overlay-bg").removeClass("show")
+				$("#data-name, #data-price").val("")
+				$('#header_table').text('Add new product')
+				$("#data-category, #data-status").prop("selectedIndex", 0)
 			},
-			error:function (xhr,textStatus) {
-				toastr.error(xhr.responseText,'err')
+			error: function (xhr, textStatus) {
+				toastr.error(xhr.responseText, 'err')
 			}
 		})
 

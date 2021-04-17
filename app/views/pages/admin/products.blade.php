@@ -152,10 +152,14 @@
                                     <div class="col-sm-12 data-field-col">
                                         <label for="data-category"> Category </label>
                                         <select class="form-control" id="data-category" name="category">
-                                            <option value="1">Audio</option>
-                                            <option value="2" Computers</option>
-                                            <option value="3">Fitness</option>
-                                            <option value="4">Appliance</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{$category->id}}">{{$category->name}}</option>
+{{--                                                <p>This is user {{ $user->id }}</p>--}}
+                                            @endforeach
+{{--                                            <option value="1">Audio</option>--}}
+{{--                                            <option value="2">Computers</option>--}}
+{{--                                            <option value="3">Fitness</option>--}}
+{{--                                            <option value="4">Appliance</option>--}}
                                         </select>
                                     </div>
                                     <div class="col-sm-12 data-field-col">

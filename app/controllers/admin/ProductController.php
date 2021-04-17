@@ -5,6 +5,7 @@ namespace App\controllers\admin;
 
 use App\core\Request;
 use App\core\Response;
+use App\models\Category;
 use App\models\Image;
 use App\models\Products;
 use Faker\Factory;
@@ -14,38 +15,23 @@ class ProductController extends \App\core\Controller
 {
     public function index(): string
     {
-        return $this->render('pages.admin.products');
+        $categories = Category::findAll()??[];
+        return $this->render('pages.admin.products',['categories'=>$categories]);
     }
 
     public function getAll(Request $request, Response $response): string
     {
-        $recordsTotal = 15;
-        $recordsFiltered = 8;
+        $results = $request->getPagination();
+        $found = Products::findAll(['category']);
 
-        $length = (int)$request->getBody()['length'];
-        $draw = (int)$request->getBody()['draw'];
-        $start = (int)$request->getBody()['start'];
-        $faker = Factory::create();
-        $results = [];
-        $max = $recordsFiltered - $start > $length ? $length : $recordsFiltered - $length;
-        for ($i = 0; $i < $max; $i++) {
-            $results[] = [
-                "id" => $faker->uuid,
-                "name" => $faker->name,
-                "category" => $faker->name,
-                "status" => $faker->colorName,
-                "published" => $faker->boolean,
-                "price" => $faker->numberBetween([100, 200])
-            ];
-        }
+        $results['data'] = $found;
+//        $results['stmt'] = $found['stmt'];
+
+        $results["recordsTotal"] = Products::count();
+        $results["recordsFiltered"] = Products::count();
         header("Content-type:application/json");
-        return json_encode([
-            "data" => $results,
-            "draw" => $draw,
-            "recordsTotal" => $recordsTotal,
-            "recordsFiltered" => $recordsFiltered,
-            $request->getBody()
-        ]);
+//        dd($results);
+        return json_encode($results);
     }
 
     /** create new product and save it
@@ -54,15 +40,19 @@ class ProductController extends \App\core\Controller
      */
     public function store(Request $request): string
     {
+        $body = $request->getBody();
         $product = new Products();
         $product->loadData($request->getBody());
         header("Content-type:application/json");
-//        dd($product,$request->getBody());
+
+        $category = Category::where('id',$body['category']);
+        if (!$category) $body['category'] = 0;
+
         if ($product->validate() && $product->save()) {
             return json_encode(["success" => $product->isSuccess(),]);
         }
-//        dd($product,$request->getBody());
-        return json_encode(["success" => true, "error" => $product->getErrors()]);
+
+        return json_encode(["success" => $product->isSuccess(), "error" => $product->getErrors()]);
     }
 
     /** update new product
@@ -75,8 +65,10 @@ class ProductController extends \App\core\Controller
 
         $input = $request->getBody();
         if (!$input['id']) return json_encode(['err' => true, 'message' => 'id required']);
+
         $data = Products::findOne($input['id']);
         if (!$data) return json_encode(['err' => true, 'message' => 'product not found']);
+
         $image = new Image();
         $image->loadImage($request->getFile(), (int)$data->id);
 
