@@ -30,6 +30,7 @@ abstract class Model implements \JsonSerializable
 
     protected array $attributes = [];
     protected array $relations = [];
+    protected array $update = [];
 
     protected array $hidden = [];
     protected array $fillable = [];
@@ -83,7 +84,7 @@ abstract class Model implements \JsonSerializable
                 if ($ruleName === self::RULE_UNIQUE) {
                     $className = $rule['class'];
                     $uniqueAttr = $rule['attribute'] ?? $attribute;
-                    $tableName = $className::tableName();
+                    $tableName = $className::getTable();
 
                     $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttr='$value'");
                     $statement->execute();
@@ -150,10 +151,32 @@ abstract class Model implements \JsonSerializable
         return $this->error[$attribute][0] ?? false;
     }
 
+    protected function image($image)
+    {
+        if(empty($image)) return $this;
+        $name = time() . "_" . rand(0, 9999999) . "_" . $image['name'];
+        $attributes = [
+            'url' => $_ENV['DOMAIN'] . '/assets/images/' . $name,
+            'original_name' => $image['name'] ?? $name,
+            'type' => $image['type'],
+            'size' => $image['size'],
+            'target' => $_SERVER['DOCUMENT_ROOT'] . '/assets/images/' . $name,
+        ];
+        return $this->fill($attributes);
+
+    }
+
+
     public function fill($attributes = []): static
     {
-        foreach ($attributes as $key => $value) {
-            $this->setAttributes($key, $value);
+        if (empty($this->fillable)) {
+            foreach ($attributes as $key => $value) {
+                $this->setAttributes($key, $value);
+            }
+        } else {
+            foreach (array_intersect_key($this->fillable, $attributes) as $key => $value) {
+                $this->setAttributes($key, $value);
+            }
         }
         return $this;
     }
@@ -163,7 +186,8 @@ abstract class Model implements \JsonSerializable
         $this->attributes[$key] = $value;
         return $this;
     }
-    #[Pure] public function getAttribute($attribute):mixed
+
+    #[Pure] public function getAttribute($attribute): mixed
     {
         return $this->getAttributes()[$attribute];
     }
@@ -171,6 +195,11 @@ abstract class Model implements \JsonSerializable
     public function getAttributes(): array
     {
         return $this->attributes;
+    }
+
+    public function getUpdate(): array
+    {
+        return $this->update;
     }
 
     /**
@@ -185,15 +214,15 @@ abstract class Model implements \JsonSerializable
      * @param array $relations
      * @param string $name
      */
-    public function setRelations(string $name,array $relations): void
+    public function setRelations(string $name, array $relations): void
     {
         $this->relations[$name] = $relations;
     }
-    public function setRelation(string $name,$relation): void
+
+    public function setRelation(string $name, $relation): void
     {
         $this->relations[$name] = $relation;
     }
-
 
 
     #[Pure] public function newCollection($models): Collections
@@ -271,7 +300,7 @@ abstract class Model implements \JsonSerializable
 
     public function getTable(): string
     {
-        return $this->table??Str::snake(Str::pluralStudly(class_basename($this)));
+        return $this->table ?? Str::snake(Str::pluralStudly(class_basename($this)));
     }
 
     public function getArrayableRelations(): array
@@ -305,8 +334,25 @@ abstract class Model implements \JsonSerializable
         return $this->toArray();
     }
 
+    public function __set($name, $value): void
+    {
+        $this->update[$name] = $value;
+        $this->attributes[$name] = $value;
+    }
+
+    #[Pure] public function __get($name): mixed
+    {
+        return $this->toArray()[$name];
+    }
+
+    public function __isset(string $name): bool
+    {
+        return isset($this->attributes[$name]);
+    }
+
     public static function __callStatic($method, $parameters): mixed
     {
+//        if(method_exists(self,$method)) return static::$method($parameters);
         return (new static)->$method(...$parameters);
     }
 

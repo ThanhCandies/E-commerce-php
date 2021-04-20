@@ -31,19 +31,6 @@ class Collections implements \JsonSerializable
         return $this->items;
     }
 
-//    public function load($relations)
-//    {
-//        if ($this->isNotEmpty()) {
-//            if (is_string($relations)) {
-//                $relations = func_get_args();
-//            }
-////            $query = $this->first()->newQueryWithoutRelationships()->with($relations);
-////
-////            $this->items = $query->eagerLoadRelations($this->items);
-//        }
-//        return $this;
-//    }
-
     public function getColumns(string|null $column = null): array
     {
         /**
@@ -60,9 +47,6 @@ class Collections implements \JsonSerializable
          * @var static $models
          */
 
-        // [1,1,1,2,3,3,2,2]
-        // [1,2,3]
-//        $itemsId = $this->getColumns($localKey);
         $modelsKey = $models->getColumns($foreignKey);
 
 

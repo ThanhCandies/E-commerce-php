@@ -48,7 +48,7 @@
                         <h2 class="content-header-title float-left mb-0">Thumb View</h2>
                         <div class="breadcrumb-wrapper col-12">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a>
+                                <li class="breadcrumb-item"><a href="/admin">Home</a>
                                 </li>
                                 <li class="breadcrumb-item"><a href="#">Data List</a>
                                 </li>
@@ -149,7 +149,7 @@
                                 <div class="row">
                                     <div class="col-sm-12 data-field-col form-group mb-0">
                                         <label for="data-name">Name</label>
-                                        <input type="text" class="form-control" id="data-name" required="" name="name">
+                                        <input autocomplete="off" type="text" class="form-control" id="data-name" required="" name="name">
                                         <div class="help-block" style="right: inherit"></div>
                                     </div>
                                     <div class="col-sm-12 data-field-col">
@@ -157,12 +157,7 @@
                                         <select class="form-control" id="data-category" name="category">
                                             @foreach ($categories as $category)
                                                 <option value="{{$category->id}}">{{$category->name}}</option>
-{{--                                                <p>This is user {{ $user->id }}</p>--}}
                                             @endforeach
-{{--                                            <option value="1">Audio</option>--}}
-{{--                                            <option value="2">Computers</option>--}}
-{{--                                            <option value="3">Fitness</option>--}}
-{{--                                            <option value="4">Appliance</option>--}}
                                         </select>
                                     </div>
                                     <div class="col-sm-12 data-field-col">
@@ -174,7 +169,7 @@
                                     </div>
                                     <div class="col-sm-12 data-field-col form-group">
                                         <label for="data-price">Price</label>
-                                        <input type="text" class="form-control" id="data-price" name="price" required="">
+                                        <input autocomplete="off"  type="text" class="form-control" id="data-price" name="price" required="">
                                         <div class="help-block"  style="right: inherit"></div>
                                     </div>
 

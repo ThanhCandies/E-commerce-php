@@ -19,7 +19,7 @@ class Image extends \App\core\DbModel
     {
         $name = time() . "_" . rand(0, 9999999) . "_" . $image['name'];
         $this->url = $_ENV['DOMAIN'] . '/assets/images/' . $name;
-        $this->original_name = $image['name'];
+        $this->original_name = $image['name']??$name;
         $this->product_id = $product_id;
         $this->type = $image['type'];
         $this->size = $image['size'];
@@ -33,11 +33,6 @@ class Image extends \App\core\DbModel
     public static function attributes(): array
     {
         return ['url', 'original_name', 'type', 'size'];
-    }
-
-    public static function foreignKey():array
-    {
-        return [Products::class=>'product_id'];
     }
 
     public function rules(): array

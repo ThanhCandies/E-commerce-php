@@ -84,6 +84,11 @@ trait QueryBuilder
         return $builder;
     }
 
+    public function create($attributes=[]):Model
+    {
+        return $this->getModel()->fill($attributes);
+    }
+
     public function select($columns = ['*']): static
     {
         $this->columns = [];
@@ -187,6 +192,98 @@ trait QueryBuilder
     {
         $this->count = true;
         return $this->getFromDatabase();
+    }
+
+    public function getUpdateAttributes($attribute): array
+    {
+        $model = $this->getModel();
+        $attributes = array_merge($model->getUpdate(), $attribute);
+        unset($attributes[$model->getKeyName()], $attributes['create_at'], $attributes['update_at']);
+
+        return $attributes;
+    }
+    public function getInsertAttributes($attribute): array
+    {
+        $model = $this->getModel();
+        $attributes = array_merge($model->getAttributes(), $attribute);
+        unset($attributes[$model->getKeyName()], $attributes['create_at'], $attributes['update_at']);
+
+        return $attributes;
+    }
+
+    public function save()
+    {
+
+    }
+
+    public function insert($attributes = [], $getId = false, $upsert = false)
+    {
+        $inserts = $this->getInsertAttributes($attributes);
+        if (empty($inserts)) return true;
+
+        $model = $this->getModel();
+        $key = array_keys($inserts);
+        $inserts = array_combine(
+            array_map(function ($k) {
+                return ':' . $k;
+            }, array_keys($inserts)),
+            $inserts
+        );
+        $sql = "INSERT INTO " . $model->getTable() . " (" . implode(', ', $key) . ") VALUES ("
+            . implode(',',array_keys($inserts)) . ')';
+
+        if ($upsert) {
+            $sql .= " ON DUPLICATE KEY UPDATE ".implode(',',array_map(fn($k)=>"$k=:$k",$key));
+        }
+        return $this->connection->save($sql, array_values($inserts), $getId);
+    }
+
+    public function insertGetId($attribute = [])
+    {
+        $this->insert($attribute, true);
+    }
+
+    public function update($attributes = [])
+    {
+        $model = $this->getModel();
+        $insert = $this->getUpdateAttributes($attributes);
+
+        if (empty($insert)) return true;
+        $updateKey = array_keys($insert);
+        $updateValue = array_values($insert);
+        $key = $model->getKeyName();
+
+        $sql = 'UPDATE ' . $model->getTable() .
+            ' SET ' . implode(', ', array_map(fn($key) => "$key = ?", $updateKey)) .
+            ' WHERE ' . $key . ' = ' . $model->{$key};
+
+        return $this->connection->save($sql, $updateValue);
+    }
+
+    public function upsert($attributes = [])
+    {
+        return $this->insert($attributes, false, true);
+    }
+
+    public function delete(): bool
+    {
+        $model = $this->getModel();
+        $table = $model->getTable();
+        $key = $model->getKeyName();
+        $value = $model->{$primaryKey} ?? null;
+        if (!$value) return true;
+
+        $this->connection->getPdo()->exec("DELETE FROM $table WHERE $key = $value;");
+        return true;
+    }
+
+    public function find($id): Model|bool|static
+    {
+        if (!$id) return $this;
+        $model = $this->getModel();
+        $query = "SELECT * FROM " . $model->getTable() . " WHERE " . $model->getKeyName() . " = $id";
+        $data = $this->connection->find($query);
+        return $data ? $model->newFormBuilder($data) : $data;
     }
 
     public function getFromDatabase($columns = ['*'])

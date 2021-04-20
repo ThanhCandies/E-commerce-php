@@ -7,7 +7,7 @@ use JetBrains\PhpStorm\Pure;
 use \JsonSerializable;
 
 /**
- * @method static QueryBuilder get(array $columns = ['*'])
+ * @method static Collections get(array $columns = ['*'])
  * @method static QueryBuilder select(array|string $columns)
  * @method static QueryBuilder distinct($bool = true)
  * @method static QueryBuilder where($bool = true)
@@ -20,15 +20,17 @@ use \JsonSerializable;
  * @method static QueryBuilder orderBy($bool = true)
  * @method static QueryBuilder limit(int $limit)
  * @method static QueryBuilder offset(int $offset)
+ * @method static static create(array $attributes=[])
+ * @method static QueryBuilder update(array $attributes=[])
+ * @method static QueryBuilder insert(array $attributes=[])
+ * @method static QueryBuilder upsert(array $attributes=[])
+ * @method static QueryBuilder insertGetId(array $attributes=[])
+ * @method static QueryBuilder save()
+ * @method static static find(int|null $id)
  */
 
 abstract class DbModel extends Model
 {
-    abstract public static function attributes(): array;
-
-    private array $query = [];
-    private int $limit = 0;
-
     public function __construct(array $attributes = [])
     {
         $this->fill($attributes);
@@ -39,47 +41,47 @@ abstract class DbModel extends Model
         return $this->{$attr} ?? false;
     }
 
-    public function save(): bool
-    {
-        try {
-            $tableName = $this->getTable();
-            $attributes = $this->attributes();
-            $params = array_map(fn($attr) => ":$attr", $attributes);
-            $statement = self::prepare("INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(",", $params) . ");");
+//    public function save(): bool
+//    {
+//        try {
+//            $tableName = $this->getTable();
+//            $attributes = $this->attributes();
+//            $params = array_map(fn($attr) => ":$attr", $attributes);
+//            $statement = self::prepare("INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(",", $params) . ");");
+//
+//            foreach ($attributes as $attribute) {
+//                $param_type = match (gettype($this->{$attribute})) {
+//                    "boolean" => \PDO::PARAM_BOOL,
+//                    "integer" => \PDO::PARAM_INT,
+//                    "string" => \PDO::PARAM_STR,
+//                    default => \PDO::PARAM_NULL
+//                };
+//                $statement->bindValue(":$attribute", $this->{$attribute}, $param_type);
+//            }
+//            $statement->execute();
+//            return true;
+//        } catch (\Exception $exception) {
+//            dd($exception);
+//        }
+//    }
 
-            foreach ($attributes as $attribute) {
-                $param_type = match (gettype($this->{$attribute})) {
-                    "boolean" => \PDO::PARAM_BOOL,
-                    "integer" => \PDO::PARAM_INT,
-                    "string" => \PDO::PARAM_STR,
-                    default => \PDO::PARAM_NULL
-                };
-                $statement->bindValue(":$attribute", $this->{$attribute}, $param_type);
-            }
-            $statement->execute();
-            return true;
-        } catch (\Exception $exception) {
-            dd($exception);
-        }
-    }
-
-    public function update($val = null): bool
-    {
-        $tableName = $this->getTable();
-        $attributes = $this->attributes();
-        $primaryKey = $this->getKeyName();
-        $value = $val ?? $this->{$primaryKey};
-
-        $params = array_map(fn($attr) => "$attr = :$attr");
-
-        $statement = self::prepare("UPDATE $tableName SET" . implode(', ', $params) . " WHERE $primaryKey = $value;");
-
-        foreach ($attributes as $attribute) {
-            $statement->bindValue(":$attributes", $this->{$attribute});
-        }
-        $statement->execute();
-        return true;
-    }
+//    public function update($val = null): bool
+//    {
+//        $tableName = $this->getTable();
+//        $attributes = $this->attributes();
+//        $primaryKey = $this->getKeyName();
+//        $value = $val ?? $this->{$primaryKey};
+//
+//        $params = array_map(fn($attr) => "$attr = :$attr");
+//
+//        $statement = self::prepare("UPDATE $tableName SET" . implode(', ', $params) . " WHERE $primaryKey = $value;");
+//
+//        foreach ($attributes as $attribute) {
+//            $statement->bindValue(":$attributes", $this->{$attribute});
+//        }
+//        $statement->execute();
+//        return true;
+//    }
 
     public function delete($val = null): bool
     {

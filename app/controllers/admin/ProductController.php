@@ -15,7 +15,8 @@ class ProductController extends \App\core\Controller
 {
     public function index(): string
     {
-        $categories = Category::get() ?? [];
+        $categories = Category::get()->all() ?? [];
+//        dump($categories[0]);
         return $this->render('pages.admin.products', ['categories' => $categories]);
     }
 
@@ -36,9 +37,13 @@ class ProductController extends \App\core\Controller
 
         $products = $prepare->get();
         $categoryId = $products->getColumns('category_id');
+        $imageId = $products->getColumns('image_id');
         $category = Category::whereIn('id', $categoryId)->get();
+        $images = Image::whereIn('id', $imageId)->get();
 
-        $results['data'] = $products->hasOne($category, 'category_id', 'id');;
+        $results['data'] = $products
+            ->hasOne($category, 'category_id', 'id')
+            ->hasOne($images, 'image_id', 'id');
 
         $results["recordsTotal"] = Product::count();
         $results["recordsFiltered"] = $prepare->count();
@@ -54,13 +59,10 @@ class ProductController extends \App\core\Controller
      */
     public function store(Request $request): string
     {
-        $body = $request->getBody();
-        $product = new Product();
-        $product->loadData($request->getBody());
-        header("Content-type:application/json");
+        $input = $request->getBody();
 
-        $category = Category::where('id', $body['category']);
-        if (!$category) $body['category'] = 0;
+        $product = Product::create($input);
+        header("Content-type:application/json");
 
         if ($product->validate() && $product->save()) {
             return json_encode(["success" => $product->isSuccess(),]);
@@ -75,23 +77,26 @@ class ProductController extends \App\core\Controller
      */
     public function update(Request $request): string
     {
-        /** @var Product $data $input */
+        /** @var Product $product */
 
         $input = $request->getBody();
         if (!$input['id']) return json_encode(['err' => true, 'message' => 'id required']);
 
-        $data = Product::findOne($input['id']);
-        if (!$data) return json_encode(['err' => true, 'message' => 'product not found']);
+        $product = Product::find($input['id']);
+        if (!$product) return json_encode(['err' => true, 'message' => 'product not found']);
 
-        $image = new Image();
-        $image->loadImage($request->getFile(), (int)$data->id);
+        $file = $request->getFile();
+        if ($file) {
+            Image::find($product->image_id)->delete();
+        }
+        $image = Image::image($request->getFile());
 
         header("Content-type:application/json");
-        if ($data->validate()
-            && $image->validate()
+
+        if ($image->validate()
             && $image->move()
-            && $data->update()
-            && $image->save()) {
+            && ($id = $image->upsert())
+            && $product->update(array_merge($input, [$image->getForeignKey() => is_int($id) ? $id : null]))) {
             return json_encode(['success' => true]);
         };
 

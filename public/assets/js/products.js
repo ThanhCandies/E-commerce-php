@@ -261,9 +261,9 @@ $(document).ready(function () {
 				{
 					data: 'images',
 					render: (data, type, row) => {
-						if (data && data.length > 0) {
-							const link = data[0].url
-							return `<img src="${link}" alt="Img placeholder">`
+						if (data&&data.url) {
+							const link = data.url
+							return `<img src="http://${link}" alt="Img placeholder">`
 						} else {
 							'<img src="/app-assets/images/elements/apple-watch.png" alt="Img placeholder">'
 						}

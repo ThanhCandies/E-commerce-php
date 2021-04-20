@@ -46,7 +46,7 @@ class Database
         return $config['driver'] . ':dbname=' . $config['database'] . ';host=' . $config['host'] . ';port=' . $config['port'];
     }
 
-    public function getPdo():\PDO
+    public function getPdo(): \PDO
     {
         if ($this->pdo instanceof \Closure) {
             return $this->pdo = call_user_func($this->pdo);
@@ -55,9 +55,30 @@ class Database
         return $this->pdo;
     }
 
-    public function select($query, $bindings = []){
+    public function find($query)
+    {
+        return $this->run($query, null, function ($query) {
+            $statement = $this->prepared($this->pdo->query($query));
+            return $statement->fetch();
+        });
+    }
+
+    public function save($query, $bindings = [], $getId = false)
+    {
+        return $this->run($query, $bindings, function ($query, $bindings) use ($getId) {
+            $statement = $this->pdo->prepare($query);
+
+            $this->bindValues($statement, $this->prepareBindings($bindings));
+
+            $statement->execute();
+
+            return $getId ? true : $statement->lastInsertId();
+        });
+    }
+
+    public function select($query, $bindings = [])
+    {
         return $this->run($query, $bindings, function ($query, $bindings) {
-//            dump($query);
             $statement = $this->prepared(
                 $this->pdo->prepare($query)
             );
@@ -69,6 +90,7 @@ class Database
             return $statement->fetchAll();
         });
     }
+
     protected function run($query, $bindings, \Closure $callback)
     {
         try {
@@ -79,17 +101,22 @@ class Database
 
         return $result;
     }
-    public function setFetchMode(int $fetchMode){
-        $this->fetchMode=$fetchMode;
+
+    public function setFetchMode(int $fetchMode)
+    {
+        $this->fetchMode = $fetchMode;
     }
+
     protected function prepared(\PDOStatement $statement): \PDOStatement
     {
         $statement->setFetchMode($this->fetchMode);
 
         return $statement;
     }
+
     public function bindValues($statement, $bindings)
     {
+        //$bindings =['key'=>'value']
 //        dump($statement,$bindings);
         foreach ($bindings as $key => $value) {
             $statement->bindValue(
@@ -99,14 +126,15 @@ class Database
             );
         }
     }
-    public function prepareBindings(array $bindings):array
+
+    public function prepareBindings(array $bindings): array
     {
         foreach ($bindings as $key => $value) {
 
             if ($value instanceof \DateTimeInterface) {
                 $bindings[$key] = $value->format('Y-m-d H:i:s');
             } elseif (is_bool($value)) {
-                $bindings[$key] = (int) $value;
+                $bindings[$key] = (int)$value;
             }
         }
 

@@ -7,6 +7,7 @@ namespace App\controllers\admin;
 use App\core\Request;
 use App\core\Query\Builder as DB;
 use App\models\Category;
+use App\models\Image;
 use App\models\Product;
 use Doctrine\Inflector\InflectorFactory;
 
@@ -14,21 +15,23 @@ class TestController extends \App\core\Controller
 {
     public function index(Request $request)
     {
-        $products = Product::select('products.*')
-            ->join('categories','products.category_id','=','categories.id')
-            ->orderBy('categories.name')
-            ->limit(4)->get();
-        $categoryId = $products->getColumns('id');
-        $category = Category::whereIn('id',$categoryId)->get();
-        $results = $products->hasOne($category);
-
-        return(json_encode($results));
+        try {
+            $input = ['id' => 5, 'name' => 'Testing2','set'=>'asd'];
 
 
+            $products = Product::create($input);
+//            dd($products->validate(),$products);
+            if (!$products) {
+                return (json_encode(['message' => 'Product not found']));
+            }
+            $arr = ['test' => ''];
+            $image = Image::image($request->getFile());
 
-
-
-//        return json_encode($products);
-
+            dd($image->upsert());
+//        dump($products->all()[1]->categories);
+            return (json_encode($products));
+        } catch (\Exception $e) {
+            return json_encode($e);
+        }
     }
 }

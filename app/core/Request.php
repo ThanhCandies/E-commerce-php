@@ -19,8 +19,7 @@ class Request
 
     public function getFile(): array
     {
-
-        return $_FILES['images'];
+        return $_FILES['images']??[];
     }
 
     #[Pure] public function getMethod(): string

@@ -18,8 +18,8 @@ class RegisterUserController extends Controller
 
 	public function store(Request $request)
 	{
-		$user = new User();
-		$user->loadData($request->getBody());
+		$user = User::fill($request->getBody());
+//		$user->loadData();
 
 		header("Content-type:application/json");
 		if ($user->validate() && $user->save()) {
