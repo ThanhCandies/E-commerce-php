@@ -30,19 +30,14 @@ class Image extends \App\core\DbModel
         return move_uploaded_file($_FILES['images']['tmp_name'], $this->target);
     }
 
-    public static function tableName(): string
-    {
-        return 'images';
-    }
-
     public static function attributes(): array
     {
         return ['url', 'original_name', 'type', 'size'];
     }
 
-    public static function primaryKey(): string
+    public static function foreignKey():array
     {
-        return 'id';
+        return [Products::class=>'product_id'];
     }
 
     public function rules(): array

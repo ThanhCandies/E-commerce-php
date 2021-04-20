@@ -67,7 +67,7 @@ class Application
     public function login(DbModel $user)
     {
         $this->user = $user;
-        $primaryKey = $user->primaryKey();
+        $primaryKey = $user->getKeyName();
         $primaryValue = $user->{$primaryKey};
         $this->session->set('user', $primaryValue);
     }
@@ -101,7 +101,7 @@ class Application
         try {
             echo $this->route->resolve();
         } catch (\Exception $exception) {
-//            dd(phpinfo());
+            dd($exception);
             // Throw error when has error while running;
             echo $this->blade->render('pages._error', ['exception' => $exception]);
         }

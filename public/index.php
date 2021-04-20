@@ -12,11 +12,20 @@ use App\models\User;
 use App\controllers\admin\CategoryController;
 use App\controllers\admin\UsersController;
 use App\controllers\admin\ImageController;
+use App\core\Collections;
+use JetBrains\PhpStorm\Pure;
 
 if (! function_exists('route')) {
     function route(string $name):string
     {
         return Application::$app->route->getPath($name);
+    }
+}
+
+if (! function_exists('collect')) {
+    #[Pure] function collect($value = null): Collections
+    {
+        return new Collections($value);
     }
 }
 
@@ -75,8 +84,9 @@ try {
     $app->route->get('/admin/users',[UsersController::class,'index'])->name('admin.users');
 
 	/** Admin Category */
-//    $app->route->get('/admin/categories',[CategoryController::class,'index'])->name('admin.categories');
-//    $app->route->post('/admin/categories',[CategoryController::class,'store']);
+    $app->route->get('/admin/categories',[CategoryController::class,'index'])->name('admin.categories');
+    $app->route->get('/api/categories',[CategoryController::class,'show']);
+    $app->route->post('/admin/categories',[CategoryController::class,'store'])->name('category.create');
 
     /** Test case */
 

@@ -2,30 +2,47 @@
 
 namespace App\core;
 
+use App\core\Query\Builder as QueryBuilder;
+use JetBrains\PhpStorm\Pure;
+use \JsonSerializable;
+
+/**
+ * @method static QueryBuilder get(array $columns = ['*'])
+ * @method static QueryBuilder select(array|string $columns)
+ * @method static QueryBuilder distinct($bool = true)
+ * @method static QueryBuilder where($bool = true)
+ * @method static QueryBuilder count(string $column=null)
+ * @method static QueryBuilder whereIn(string $column,array $value)
+ * @method static QueryBuilder orWhere($bool = true)
+ * @method static QueryBuilder join(string $table,string $first,string $operator,string $second,string $type,bool $where)
+ * @method static QueryBuilder all(array $columns = ['*'])
+ * @method static QueryBuilder groupBy(array|string $columns)
+ * @method static QueryBuilder orderBy($bool = true)
+ * @method static QueryBuilder limit(int $limit)
+ * @method static QueryBuilder offset(int $offset)
+ */
+
 abstract class DbModel extends Model
 {
-    abstract public static function tableName(): string;
-
     abstract public static function attributes(): array;
 
-    abstract public static function primaryKey(): string;
+    private array $query = [];
+    private int $limit = 0;
 
-    /**
-     * @param $attr
-     * @return false|string|int|
-     */
+    public function __construct(array $attributes = [])
+    {
+        $this->fill($attributes);
+    }
+
     public function getAttr($attr): bool|int|string
     {
         return $this->{$attr} ?? false;
     }
 
-    /**
-     * @return bool
-     */
     public function save(): bool
     {
         try {
-            $tableName = $this->tableName();
+            $tableName = $this->getTable();
             $attributes = $this->attributes();
             $params = array_map(fn($attr) => ":$attr", $attributes);
             $statement = self::prepare("INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(",", $params) . ");");
@@ -37,11 +54,8 @@ abstract class DbModel extends Model
                     "string" => \PDO::PARAM_STR,
                     default => \PDO::PARAM_NULL
                 };
-//                dump(["$attribute"=>$param_type,"type"=>gettype($attribute),"value"=>$this->{$attribute}]);
                 $statement->bindValue(":$attribute", $this->{$attribute}, $param_type);
-//                dump($this->{$attribute});
             }
-//            dd($statement,$attributes);
             $statement->execute();
             return true;
         } catch (\Exception $exception) {
@@ -51,9 +65,9 @@ abstract class DbModel extends Model
 
     public function update($val = null): bool
     {
-        $tableName = $this->tableName();
+        $tableName = $this->getTable();
         $attributes = $this->attributes();
-        $primaryKey = $this->primaryKey();
+        $primaryKey = $this->getKeyName();
         $value = $val ?? $this->{$primaryKey};
 
         $params = array_map(fn($attr) => "$attr = :$attr");
@@ -69,8 +83,8 @@ abstract class DbModel extends Model
 
     public function delete($val = null): bool
     {
-        $tableName = $this->tableName();
-        $primaryKey = $this->primaryKey();
+        $tableName = $this->getTable();
+        $primaryKey = $this->getKeyName();
         $value = $val ?? $this->{$primaryKey};
 
         $statement = self::prepare("DELETE FROM $tableName WHERE $primaryKey = $value;");
@@ -83,19 +97,27 @@ abstract class DbModel extends Model
         return Application::$app->db->pdo->prepare($sql);
     }
 
-    public static function where(string $attribute, string $value)
+    #[Pure] public function attributeArray():array
     {
-        $tableName = static::tableName();
-        $statement = self::prepare("SELECT * FROM $tableName WHERE $attribute = $value;");
-        $statement->execute();
+        if (empty($this->hidden)) {
+            return $this->attributes;
+        } else {
+            $attributes = [];
 
-        return $statement->fetchObject(static::class);
+            foreach ($this->attributes as $key => $value) {
+                if (!in_array($key, $this->hidden)) {
+                    $attributes[$key] = $value;
+                }
+            }
+            return $attributes;
+        }
     }
+
 
 
     public static function findOne(array $where, $options = "AND", array $props = [])
     {
-        $tableName = static::tableName();
+        $tableName = static::getTable();
         $attributes = array_keys($where);
         $combine = " " . $options . " ";
         $whereSQL = implode($combine, array_map(fn($attr) => "$attr = :$attr", $attributes));
@@ -116,12 +138,12 @@ abstract class DbModel extends Model
          * @var $pagination array
          */
 
-        $tableName = static::tableName();
+        $tableName = static::getTable();
         $attributes = static::attributes();
         $foreign = method_exists(static::class, 'foreignKey') ? static::foreignKey() : [];
 
         $pagination = Application::$app->request->getPagination();
-        $sortParams = $pagination['sort_by']??[];
+        $sortParams = $pagination['sort_by'] ?? [];
 
         $attr = implode(",", array_map(fn($a) => "$tableName.$a", $attributes));
         $arr = ["ASC", "DESC"];
@@ -140,7 +162,7 @@ abstract class DbModel extends Model
                 if (in_array($separate[0], $props)) {
                     array_shift($separate);
                     $table = $foreign[explode('.', $key)[0]]::tableName();
-                    $order[] = "$table.".implode(".",$separate)." $value";
+                    $order[] = "$table." . implode(".", $separate) . " $value";
                 }
 //                dd($order);
             }
@@ -160,7 +182,7 @@ abstract class DbModel extends Model
         // Search;
         $search = array_intersect_key(Application::$app->request->getBody(), array_flip($attributes));
         $searchKey = array_keys($search);
-        $whereSql = empty($searchKey)?"":" WHERE " . implode(' OR ', array_map(fn($attr) => "$tableName.$attr REGEXP :$attr", $searchKey));
+        $whereSql = empty($searchKey) ? "" : " WHERE " . implode(' OR ', array_map(fn($attr) => "$tableName.$attr REGEXP :$attr", $searchKey));
 
         // JOIN Table
         foreach ($props as $key) {
@@ -194,20 +216,15 @@ abstract class DbModel extends Model
                 $instance->{$key} = $nestedObj[array_search($instance->{$key}, array_column($nestedObj, $class::primaryKey()))];
             }
         }
-
         return $data;
     }
 
-    public static function count($filter = ''): int
-    {
-        $tableName = static::tableName();
-        $stmt = self::prepare("SELECT COUNT(*) FROM $tableName");
-        $stmt->execute();
-//        $sql = "SELECT count(*) FROM `table` WHERE foo = ?";
-//        $result = $con->prepare($sql);
-//        $result->execute([$bar]);
-//        $number_of_rows = $result->fetchColumn();
-        return (int)$stmt->fetchColumn();
-    }
+//    public static function count($filter = ''): int
+//    {
+//        $tableName = static::tableName();
+//        $stmt = self::prepare("SELECT COUNT(*) FROM $tableName");
+//        $stmt->execute();
+//        return (int)$stmt->fetchColumn();
+//    }
 
 }

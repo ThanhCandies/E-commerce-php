@@ -16,6 +16,8 @@
     <link rel="stylesheet" type="text/css" href="/app-assets/css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="/app-assets/css/bootstrap-extended.css">
     <link rel="stylesheet" type="text/css" href="/app-assets/css/colors.css">
+    <link rel="stylesheet" type="text/css" href="/css/form-validation.css">
+    <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" type="text/css" href="/app-assets/css/components.css">
     <link rel="stylesheet" type="text/css" href="/app-assets/css/themes/dark-layout.css">
     <link rel="stylesheet" type="text/css" href="/app-assets/css/themes/semi-dark-layout.css">
@@ -133,7 +135,7 @@
                 <!-- add new sidebar starts -->
                 <div class="add-new-data-sidebar">
                     <div class="overlay-bg"></div>
-                    <form class="add-new-data" method="POST" action="<?php echo e(route('products.create')); ?>" id="create_form" >
+                    <form class="add-new-data" method="POST" action="<?php echo e(route('products.create')); ?>" id="create_form" novalidate>
                         <div class="div mt-2 px-2 d-flex new-data-title justify-content-between">
                             <div>
                                 <h4 class="text-uppercase" id="header_table">Add new product</h4>
@@ -145,9 +147,10 @@
                         <div class="data-items pb-3">
                             <div class="data-fields px-2 mt-3">
                                 <div class="row">
-                                    <div class="col-sm-12 data-field-col">
+                                    <div class="col-sm-12 data-field-col form-group mb-0">
                                         <label for="data-name">Name</label>
-                                        <input type="text" class="form-control" id="data-name" name="name">
+                                        <input type="text" class="form-control" id="data-name" required="" name="name">
+                                        <div class="help-block" style="right: inherit"></div>
                                     </div>
                                     <div class="col-sm-12 data-field-col">
                                         <label for="data-category"> Category </label>
@@ -165,14 +168,14 @@
                                     <div class="col-sm-12 data-field-col">
                                         <label for="data-status">Published</label>
                                         <select class="form-control" id="data-status" name="published">
-                                            <option value="">UnPublished</option>
+                                            <option value="0">UnPublished</option>
                                             <option value="1">Published</option>
-                                            <option value="2">Hide</option>
                                         </select>
                                     </div>
-                                    <div class="col-sm-12 data-field-col">
+                                    <div class="col-sm-12 data-field-col form-group">
                                         <label for="data-price">Price</label>
-                                        <input type="text" class="form-control" id="data-price" name="price">
+                                        <input type="text" class="form-control" id="data-price" name="price" required="">
+                                        <div class="help-block"  style="right: inherit"></div>
                                     </div>
 
                                     <div class="col-sm-12 data-field-col data-list-upload">
@@ -185,10 +188,10 @@
                         </div>
                         <div class="add-data-footer d-flex justify-content-around px-3 mt-2">
                             <div class="add-data-btn">
-                                <button class="btn btn-primary">Add Data</button>
+                                <button type="submit" class="btn btn-primary">Add Data</button>
                             </div>
                             <div class="cancel-data-btn">
-                                <button class="btn btn-outline-danger">Cancel</button>
+                                <button type="reset" class="btn btn-outline-danger">Cancel</button>
                             </div>
                         </div>
                     </form>
@@ -224,12 +227,15 @@
     <script src="/app-assets/js/core/app-menu.js"></script>
     <script src="/app-assets/js/core/app.js"></script>
     <script src="/app-assets/js/scripts/components.js"></script>
-    <script src="/js/vendors/toastr/toastr.min.js"></script>
+    <script src="/js/vendors/validation/jqBootstrapValidation.js"></script>
 
+    <script src="/js/vendors/serializeObject/jquery.serialize-object.min.js"></script>
+
+    <script src="/js/vendors/toastr/toastr.min.js"></script>
     <!-- END: Theme JS-->
 
     <!-- BEGIN: Page JS-->
-
+    
     <script src="/assets/js/products.js"></script>
     <!-- END: Page JS-->
 <?php $__env->stopSection(); ?>

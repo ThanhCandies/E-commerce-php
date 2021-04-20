@@ -23,6 +23,7 @@
 		"vlucas/phpdotenv": "^5.3",
 		"jenssegers/blade": "^1.4",
 		"ext-json": "*",
-      "ext-pdo": "*"
+      "ext-pdo": "*",
+		"doctrine/inflector": "^2.0"
     }
 }

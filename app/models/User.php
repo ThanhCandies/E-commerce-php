@@ -19,11 +19,7 @@ class User extends UserModel
     protected string $confirmPassword = '';
     protected bool $terms = false;
     public $role = 2;
-
-    public static function tableName(): string
-    {
-        return 'users';
-    }
+    protected array $hidden = ['password','confirmPassword'];
 
     public function save():bool
     {
@@ -47,11 +43,6 @@ class User extends UserModel
     public static function attributes(): array
     {
         return ['firstname', 'lastname', 'email', 'password', 'username', 'status'];
-    }
-
-    public static function primaryKey(): string
-    {
-        return 'id';
     }
 
     public static function foreignKey(): array

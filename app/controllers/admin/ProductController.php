@@ -7,7 +7,7 @@ use App\core\Request;
 use App\core\Response;
 use App\models\Category;
 use App\models\Image;
-use App\models\Products;
+use App\models\Product;
 use Faker\Factory;
 
 
@@ -15,22 +15,36 @@ class ProductController extends \App\core\Controller
 {
     public function index(): string
     {
-        $categories = Category::findAll()??[];
-        return $this->render('pages.admin.products',['categories'=>$categories]);
+        $categories = Category::get() ?? [];
+        return $this->render('pages.admin.products', ['categories' => $categories]);
     }
 
     public function getAll(Request $request, Response $response): string
     {
         $results = $request->getPagination();
-        $found = Products::findAll(['category']);
+        $sort_by = $request->getBody()['sort_by'] ?? [];
 
-        $results['data'] = $found;
-//        $results['stmt'] = $found['stmt'];
+        $prepare = Product::select('products.*')
+            ->outerJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->where('name', 'regexp', '')
+            ->limit($results['length'])
+            ->offset($results['length'] * ($results['page'] - 1));
 
-        $results["recordsTotal"] = Products::count();
-        $results["recordsFiltered"] = Products::count();
+        foreach ($sort_by as $name => $type) {
+            $prepare = $prepare->orderBy($name, $type);
+        }
+
+        $products = $prepare->get();
+        $categoryId = $products->getColumns('category_id');
+        $category = Category::whereIn('id', $categoryId)->get();
+
+        $results['data'] = $products->hasOne($category, 'category_id', 'id');;
+
+        $results["recordsTotal"] = Product::count();
+        $results["recordsFiltered"] = $prepare->count();
         header("Content-type:application/json");
-//        dd($results);
+
+
         return json_encode($results);
     }
 
@@ -41,11 +55,11 @@ class ProductController extends \App\core\Controller
     public function store(Request $request): string
     {
         $body = $request->getBody();
-        $product = new Products();
+        $product = new Product();
         $product->loadData($request->getBody());
         header("Content-type:application/json");
 
-        $category = Category::where('id',$body['category']);
+        $category = Category::where('id', $body['category']);
         if (!$category) $body['category'] = 0;
 
         if ($product->validate() && $product->save()) {
@@ -61,12 +75,12 @@ class ProductController extends \App\core\Controller
      */
     public function update(Request $request): string
     {
-        /** @var Products $data $input */
+        /** @var Product $data $input */
 
         $input = $request->getBody();
         if (!$input['id']) return json_encode(['err' => true, 'message' => 'id required']);
 
-        $data = Products::findOne($input['id']);
+        $data = Product::findOne($input['id']);
         if (!$data) return json_encode(['err' => true, 'message' => 'product not found']);
 
         $image = new Image();
@@ -82,7 +96,6 @@ class ProductController extends \App\core\Controller
         };
 
         return json_encode(['err' => true]);
-//        dd($request->getFile(), $request->getBody());
     }
 
     public function destroy()

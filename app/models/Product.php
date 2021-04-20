@@ -7,37 +7,26 @@ namespace App\models;
 use App\core\DbModel;
 use JetBrains\PhpStorm\ArrayShape;
 
-class Products extends DbModel
+class Product extends DbModel
 {
     public int|null $id = 0;
     public string $name = '';
-    public bool|int|null $published = false;
+    public bool|null $published = false;
     public int $price = 0;
     public int|object|null $category = 0;
     public int|null|object $image = 0;
 
-    public static function tableName(): string
-    {
-        return 'products';
-    }
+    protected string $table = 'products';
 
     public static function attributes(): array
     {
-        return ['id','name', 'published', 'price','category'];
+        return ['id', 'name', 'published', 'price', 'category'];
     }
 
-    public static function primaryKey(): string
+    public static function foreignKey(): array
     {
-        return 'id';
+        return ['category' => Category::class];
     }
-    public static function foreignKey():array
-    {
-        return ['category'=>Category::class];
-    }
-    public static function hasMany():array {
-        return ['category'=>Category::class];
-    }
-
 
     #[ArrayShape(['name' => "array"])] public function rules(): array
     {

@@ -12,7 +12,7 @@ class Role extends DbModel
 
 
 
-    public function rules(): array
+   public function rules(): array
     {
         return [
             'role'=>[self::RULE_REQUIRED]
@@ -22,13 +22,5 @@ class Role extends DbModel
     {
         return ['role'];
     }
-    public static function tableName(): string
-    {
-        return 'roles';
-    }
 
-    public static function primaryKey(): string
-    {
-        return 'id';
-    }
 }
