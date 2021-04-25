@@ -1,6 +1,6 @@
 
 <?php $__env->startSection('header'); ?>
-    <title>Products List</title>
+    <title>Categories List</title>
     <link rel="apple-touch-icon" href="/app-assets/images/ico/apple-icon-120.png">
     <link rel="shortcut icon" type="image/x-icon" href="/app-assets/images/ico/favicon.ico">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600" rel="stylesheet">
@@ -81,7 +81,7 @@
                                     Actions
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="#"><i class="feather icon-trash"></i>Delete</a>
+                                    <a class="dropdown-item" data-role="delete-list" href="#"><i class="feather icon-trash"></i>Delete</a>
                                     <a class="dropdown-item" href="#"><i class="feather icon-archive"></i>Archive</a>
                                     <a class="dropdown-item" href="#"><i class="feather icon-file"></i>Print</a>
                                     <a class="dropdown-item" href="#"><i class="feather icon-save"></i>Another
@@ -97,34 +97,39 @@
                             <thead>
                             <tr>
                                 <th></th>
+                                <th>IMAGE</th>
                                 <th>NAME</th>
                                 <th>POPULARITY</th>
                                 <th>STATUS</th>
+                                <th>PRODUCTS</th>
+                                <th>CREATE</th>
                                 <th>ACTION</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td></td>
-                                <td class="product-name">Computers</td>
-                                <td>
-                                    <div class="progress progress-bar-success">
-                                        <div class="progress-bar" role="progressbar" aria-valuenow="40"
-                                             aria-valuemin="40" aria-valuemax="100" style="width:97%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="chip chip-warning">
-                                        <div class="chip-body">
-                                            <div class="chip-text">on hold</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="product-action">
-                                    <span class="action-edit"><i class="feather icon-edit"></i></span>
-                                    <span class="action-delete"><i class="feather icon-trash"></i></span>
-                                </td>
-                            </tr>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                             </tbody>
                         </table>
                     </div>
@@ -137,7 +142,7 @@
                         <form class="add-new-data" method="POST" action="<?php echo e(route('category.create')); ?>" id="create_form" novalidate>
                             <div class="div mt-2 px-2 d-flex new-data-title justify-content-between">
                                 <div>
-                                    <h4 class="text-uppercase">ADD NEW CATEGORY</h4>
+                                    <h4 class="text-uppercase"  id="header_table">ADD NEW CATEGORY</h4>
                                 </div>
                                 <div class="hide-data-sidebar">
                                     <i class="feather icon-x"></i>

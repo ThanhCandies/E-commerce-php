@@ -19,16 +19,17 @@ class Request
 
     public function getFile(): array
     {
-        return $_FILES['images']??[];
+        return $_FILES['images'] ?? [];
     }
 
     #[Pure] public function getMethod(): string
     {
         return strtoupper($_SERVER['REQUEST_METHOD']);
     }
+
     public static function filterObject($object): array
     {
-        $body=[];
+        $body = [];
         foreach ($object as $key => $value) {
             if (is_array($value)) {
                 $body[$key] = self::filterObject($value);
@@ -42,25 +43,25 @@ class Request
     public function getBody(): array
     {
         $body = [];
+
         if (isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"] === 'application/json; charset=UTF-8') {
             if ($this->getMethod() === 'GET') {
                 foreach ($_GET as $key => $value) {
                     if (is_array($value)) {
-                        $body[$key]=self::filterObject($value);
+                        $body[$key] = self::filterObject($value);
                     } else {
                         $body[$key] = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
                     }
                 }
             }
             if ($this->getMethod() === 'POST') {
-                $_POST = json_decode(file_get_contents('php://input'));
-                foreach ($_POST as $key => $value) {
-                    if (is_array($value)) {
-                        $body[$key] = filter_var_array($value);
-                    } else {
-                        $body[$key] = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
-                    }
-                }
+                $INPUT = json_decode(file_get_contents('php://input'));
+                $body = self::filterObject($INPUT);
+            }
+            if ($this->getMethod() === 'DELETE' ||
+                $this->getMethod() === 'PUT') {
+
+                parse_str(file_get_contents('php://input'), $body);
             }
             return $body;
         }
@@ -68,7 +69,7 @@ class Request
         if ($this->getMethod() === 'GET') {
             foreach ($_GET as $key => $value) {
                 if (is_array($value)) {
-                    $body[$key]=self::filterObject($value);
+                    $body[$key] = self::filterObject($value);
                 } else {
                     $body[$key] = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
                 }
@@ -79,6 +80,10 @@ class Request
                 $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
 //                $body[$key] = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
             }
+        }
+        if ($this->getMethod() === 'DELETE' ||
+            $this->getMethod() === 'PUT') {
+            parse_str(file_get_contents('php://input'), $body);
         }
         return $body;
     }

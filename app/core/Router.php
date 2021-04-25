@@ -54,6 +54,9 @@ class Router
         return new Route($path);
     }
 
+    public function __request(){}
+
+
     public function setName($name, $path)
     {
         $this->nameList[$name] = $path;
@@ -74,7 +77,6 @@ class Router
         };
 
         if (is_string($cb)) {
-//            return Application::$app->view->renderView($cb);
             return Application::$app->blade->render($cb);
         }
         if (is_array($cb)) {

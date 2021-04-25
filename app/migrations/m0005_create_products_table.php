@@ -14,12 +14,14 @@ class m0005_create_products_table extends Migration
             price int NOT NULL DEFAULT 0,
             sold int Default 0,
             category_id int,
-            image varchar(255),
+            description TEXT,
+            image_id varchar(255),
             published boolean default false,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY(id),
-            CONSTRAINT FK_CategoryProduct FOREIGN KEY (category_id) REFERENCES categories(id)
+            CONSTRAINT FK_CategoryProduct FOREIGN KEY (category_id) REFERENCES categories(id),
+            CONSTRAINT FK_ProductImage FOREIGN KEY (image_id) REFERENCES images(id)
         ) ENGINE=INNODB;";
         $db->pdo->exec($SQL);
     }

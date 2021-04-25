@@ -8,6 +8,7 @@ use App\core\Application;
 use App\core\Collections;
 use App\core\Database;
 use App\core\Model;
+use http\Exception;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
 
@@ -19,6 +20,7 @@ trait QueryBuilder
     public Database $connection;
     public object $grammar;
     public Model $model;
+
     protected int $fetchType = \PDO::FETCH_OBJ;
 
     protected array|null $columns = null;
@@ -28,6 +30,7 @@ trait QueryBuilder
     protected array $having = [];
     protected array $orderBy;
     protected array $joins = [];
+    protected array $attributes = [];
     protected bool $distinct = false;
     protected int|null $limit = null;
     protected int|null $offset = null;
@@ -84,14 +87,14 @@ trait QueryBuilder
         return $builder;
     }
 
-    public function create($attributes=[]):Model
+    public function create($attributes = []): Model
     {
         return $this->getModel()->fill($attributes);
     }
 
     public function select($columns = ['*']): static
     {
-        $this->columns = [];
+//        $this->columns = [];
         $this->bindings['select'] = [];
         $columns = is_array($columns) ? $columns : func_get_args();
 
@@ -116,20 +119,33 @@ trait QueryBuilder
         return $this;
     }
 
-    public function where($columns, $operator, $value = null, $boolean = "AND"): static
+    public function where($columns, $operator = null, $value = null, $boolean = "AND"): static
     {
-        if (!in_array($operator, $this->operators) && !in_array(strtolower($operator), $this->comparisons)) {
+//         dump($columns, $operator,$value);
+        if (!in_array($operator, $this->operators)
+            && !in_array(strtolower($operator), $this->comparisons)) {
             $value = $operator;
             $operator = '=';
         }
         if (!$value) return $this;
         $this->where[] = compact('columns', 'operator', 'value', 'boolean');
+        $this->bindings['where'][] = $value;
         return $this;
     }
 
     public function orWhere($columns, $operator, $value = null): static
     {
         return $this->where($columns, $operator, $value, 'or');
+    }
+
+    public function whereBetween($column, array $attribute)
+    {
+
+    }
+
+    public function whereIn($column, array $attributes): static
+    {
+        return $this->where($column, 'IN', array_unique($attributes));
     }
 
     public function groupBy($columns): static
@@ -177,21 +193,22 @@ trait QueryBuilder
         return $this;
     }
 
-    public function whereBetween($column, array $attribute)
+
+    public function count($columns = ['*'])
     {
+        if (!isset($this->from) || empty($this->from)) {
+            return 0;
+        }
+        $sql = $this->distinct ? 'SELECT DISTINCT' : 'SELECT';
+        $sql .= " COUNT(" . implode(', ', $columns) . ")";
 
-    }
+        $sql .= ' FROM ' . $this->from;
 
-    public function whereIn($column, array $attributes): static
-    {
-        return $this->where($column, 'IN', array_unique($attributes));
-    }
-
-
-    public function count($columns = null)
-    {
-        $this->count = true;
-        return $this->getFromDatabase();
+        $sql .= $this->compileJoin();
+        $sql .= $this->compileWhere();
+        $stmt = $this->connection->getPdo()->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchColumn();
     }
 
     public function getUpdateAttributes($attribute): array
@@ -202,23 +219,53 @@ trait QueryBuilder
 
         return $attributes;
     }
-    public function getInsertAttributes($attribute): array
+
+    public function getInsertAttributes($inserts, $unsetPrimaryKey = true): array
     {
         $model = $this->getModel();
-        $attributes = array_merge($model->getAttributes(), $attribute);
-        unset($attributes[$model->getKeyName()], $attributes['create_at'], $attributes['update_at']);
+
+        $attributes = array_intersect_key(array_merge($model->getAttributes(), $inserts), array_flip($model->getFillable()));
+
+        if ($unsetPrimaryKey) unset($attributes[$model->getKeyName()]);
+        unset($attributes['create_at'], $attributes['update_at']);
 
         return $attributes;
     }
 
     public function save()
     {
+        if ($this->getModel()->exists) {
+            return $this->update();
+        } else {
 
+            return $this->insert(); // Editing here!!
+        }
+    }
+
+    public function attributes($attribute)
+    {
+        $this->attributes = is_array($attribute) ? $attribute : func_get_args();
+        return $this;
+    }
+
+    public function insertMany(array $inserts)
+    {
+        if (!$this->from ?? true) throw new \Exception('No table');
+        $prepare = "(" . implode(', ', array_map(fn() => '?', $this->attributes)) . ")";
+
+        $sql = "INSERT INTO " . $this->from . " (" . implode(', ', $this->attributes) . ") VALUES " . implode(', ', array_fill(0,count($inserts),$prepare));
+        $bindings = array();
+        array_walk_recursive($inserts, function ($value, $key) use (&$bindings) {
+            $bindings[] = $value;
+        }, $bindings);
+//        dd($sql);
+
+        return $this->connection->save($sql, $bindings);
     }
 
     public function insert($attributes = [], $getId = false, $upsert = false)
     {
-        $inserts = $this->getInsertAttributes($attributes);
+        $inserts = $this->getInsertAttributes($attributes, !$upsert);
         if (empty($inserts)) return true;
 
         $model = $this->getModel();
@@ -230,28 +277,36 @@ trait QueryBuilder
             $inserts
         );
         $sql = "INSERT INTO " . $model->getTable() . " (" . implode(', ', $key) . ") VALUES ("
-            . implode(',',array_keys($inserts)) . ')';
+            . implode(',', array_keys($inserts)) . ')';
 
         if ($upsert) {
-            $sql .= " ON DUPLICATE KEY UPDATE ".implode(',',array_map(fn($k)=>"$k=:$k",$key));
+            $sql .= " ON DUPLICATE KEY UPDATE " . implode(', ', array_map(fn($k) => "$k = :$k" . "2", $key));
+            $upserts = array_flip(array_map(function ($v) {
+                return $v . "2";
+            }, array_flip($inserts)));
+
+            $inserts = array_merge($inserts, $upserts);
         }
-        return $this->connection->save($sql, array_values($inserts), $getId);
+        return $this->connection->save($sql, $inserts, $getId);
     }
 
     public function insertGetId($attribute = [])
     {
-        $this->insert($attribute, true);
+        return $this->insert($attribute, true);
     }
 
     public function update($attributes = [])
     {
         $model = $this->getModel();
-        $insert = $this->getUpdateAttributes($attributes);
+        $insert = $this->getInsertAttributes($attributes, false);
+
 
         if (empty($insert)) return true;
+
         $updateKey = array_keys($insert);
         $updateValue = array_values($insert);
         $key = $model->getKeyName();
+
 
         $sql = 'UPDATE ' . $model->getTable() .
             ' SET ' . implode(', ', array_map(fn($key) => "$key = ?", $updateKey)) .
@@ -262,27 +317,88 @@ trait QueryBuilder
 
     public function upsert($attributes = [])
     {
-        return $this->insert($attributes, false, true);
+        return $this->insert($attributes, true, true);
     }
 
-    public function delete(): bool
+    public function delete(array|string|int|null $values, $getRow = false): bool|int|\PDOStatement
     {
         $model = $this->getModel();
+
         $table = $model->getTable();
         $key = $model->getKeyName();
-        $value = $model->{$primaryKey} ?? null;
-        if (!$value) return true;
 
-        $this->connection->getPdo()->exec("DELETE FROM $table WHERE $key = $value;");
-        return true;
+        $value = $model->{$key} ?? null;
+
+        $query = "DELETE FROM $table WHERE";
+        $bindings = [];
+        if ($value) {
+            $query .= " $key = ?";
+            $bindings[] = $value;
+        } else if (!empty($values = is_array($values) ? $values : [$values])) {
+            $bindings = $values;
+            $query .= " $key IN (" . implode(', ', array_map(fn() => '?', $values)) . ")";
+        } else if (!empty($bindings = array_merge($values, $this->bindings['where']))) {
+            $query .= $this->compileWhereBind();
+        };
+
+        if (empty($bindings)) return false;
+        return $this->connection->delete($query, $bindings);
+    }
+
+    public function compileWhereBind()
+    {
+        $sql = '';
+        if (isset($this->where) && is_array($this->where)) {
+            foreach ($this->where as $wk => $val) {
+                if ($wk > 0) {
+                    $sql .= ' ' . (strtolower($val['boolean']) === 'and' ? "AND" : "OR");
+                }
+                $value = is_array($val['value']) ? (" (" . implode(', ', array_map(fn() => "?", $val['value'])) . ")") : " ?";
+
+                $column = empty($this->joins) && str_contains($val['columns'], '.')
+                    ? $val['columns']
+                    : $this->getModel()->getTable() . '.' . $val['columns'];
+
+                $sql .= " "
+                    . $column . " "
+                    . $val['operator'] . " "
+                    . $value;
+            }
+            return $sql;
+        } else {
+            return false;
+        }
     }
 
     public function find($id): Model|bool|static
     {
         if (!$id) return $this;
         $model = $this->getModel();
+
         $query = "SELECT * FROM " . $model->getTable() . " WHERE " . $model->getKeyName() . " = $id";
         $data = $this->connection->find($query);
+
+        return $data ? $model->newFormBuilder((array)$data) : $data;
+    }
+
+    public function first()
+    {
+        if (!isset($this->where) || empty($this->where)) return false;
+        $model = $this->getModel();
+
+        $query = "SELECT * FROM " . $model->getTable() . " WHERE";
+        foreach ($this->where as $key => $value) {
+            if ($key > 0) {
+                $query .= " " . $value['boolean'];
+            }
+            $query .= " " . $value['columns'] . " " . $value['operator'] . " ?";
+        }
+
+        //'columns', 'operator', 'value', 'boolean'
+        $bindings = array_column($this->where, 'value');
+
+        $data = $this->connection->selectOne($query, $bindings);
+
         return $data ? $model->newFormBuilder($data) : $data;
     }
 
@@ -306,7 +422,7 @@ trait QueryBuilder
 
         if (!($this->count ?? false)) {
             $models = $this->connection->select($sql);
-//            dump(collect($models));
+//            dump($sql);
             return !isset($this->model) ? $models : collect($models);
         }
 
@@ -325,7 +441,7 @@ trait QueryBuilder
         if (count($models = $this->getModels($columns)) > 0) {
 //            $models = $this->eagerLoadRelations($models);
         };
-//        dump($models);
+
         return $this->getModel()->newCollection($models);
     }
 
@@ -349,26 +465,6 @@ trait QueryBuilder
         }
         return $results;
     }
-
-
-//    public function eagerLoadRelations(array $models)
-//    {
-//        foreach ($this->eagerLoad as $name => $constraints) {
-//            if (!str_contains($name, '.')) {
-//
-//                $models = $this->eagerLoadRelation($models, $name, $constraints);
-//            }
-//        }
-//
-//        return $models;
-//    }
-
-//    public function eagerLoadRelation(array $models, $name, \Closure $constraints): array
-//    {
-//        $relation = $this->getRelation($name);
-//
-//        return [];
-//    }
 
     public function getRelation($name)
     {
@@ -451,7 +547,11 @@ trait QueryBuilder
         if (isset($this->where) && is_array($this->where)) {
             $sql .= ' WHERE';
             foreach ($this->where as $wk => $val) {
+                if ($wk > 0) {
+                    $sql .= ' ' . (strtolower($val['boolean']) === 'and' ? "AND" : "OR");
+                }
                 $value = is_array($val['value']) ? ("(" . implode(',', $val['value']) . ")") : $val['value'];
+
                 $column = empty($this->joins) && str_contains($val['columns'], '.')
                     ? $val['columns']
                     : $this->getModel()->getTable() . '.' . $val['columns'];
@@ -460,9 +560,6 @@ trait QueryBuilder
                     . $column . " "
                     . $val['operator'] . " "
                     . $value;
-                if ($wk < count($this->where) - 1) {
-                    $sql .= ' ' . (strtolower($val['boolean']) === 'and' ? "AND" : "OR");
-                }
             }
         }
         return $sql;

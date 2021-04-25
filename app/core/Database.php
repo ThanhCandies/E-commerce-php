@@ -55,6 +55,25 @@ class Database
         return $this->pdo;
     }
 
+    public function delete($query,$binding) {
+        return $this->run($query, $binding, function ($query, $bindings) {
+            $statement = $this->prepared($this->pdo->prepare($query));
+            $this->bindValues($statement, $this->prepareBindings($bindings));
+            $statement->execute();
+            return $statement->rowCount();
+        });
+    }
+
+    public function selectOne($query, $binding = [])
+    {
+        return $this->run($query, $binding, function ($query, $bindings) {
+            $statement = $this->prepared($this->pdo->prepare($query));
+            $this->bindValues($statement, $this->prepareBindings($bindings));
+            $statement->execute();
+            return $statement->fetch();
+        });
+    }
+
     public function find($query)
     {
         return $this->run($query, null, function ($query) {
@@ -66,13 +85,13 @@ class Database
     public function save($query, $bindings = [], $getId = false)
     {
         return $this->run($query, $bindings, function ($query, $bindings) use ($getId) {
+//            dump($query);
             $statement = $this->pdo->prepare($query);
 
             $this->bindValues($statement, $this->prepareBindings($bindings));
 
             $statement->execute();
-
-            return $getId ? true : $statement->lastInsertId();
+            return $getId ? $this->pdo->lastInsertId() : true;
         });
     }
 

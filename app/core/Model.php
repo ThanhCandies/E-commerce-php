@@ -33,8 +33,9 @@ abstract class Model implements \JsonSerializable
     protected array $update = [];
 
     protected array $hidden = [];
+
     protected array $fillable = [];
-    protected bool $exists = false;
+    public bool $exists = false;
 
     public function loadData($data)
     {
@@ -52,7 +53,7 @@ abstract class Model implements \JsonSerializable
     public function validate(): bool
     {
         foreach ($this->rules() as $attribute => $rules) {
-            $value = $this->{$attribute};
+            $value = $this->getAttribute($attribute);
             foreach ($rules as $rule) {
                 $ruleName = $rule;
                 if (!is_string($ruleName)) {
@@ -151,13 +152,13 @@ abstract class Model implements \JsonSerializable
         return $this->error[$attribute][0] ?? false;
     }
 
-    protected function image($image)
+    public function image($image): static
     {
-        if(empty($image)) return $this;
+        if (empty($image)) return $this;
         $name = time() . "_" . rand(0, 9999999) . "_" . $image['name'];
         $attributes = [
             'url' => $_ENV['DOMAIN'] . '/assets/images/' . $name,
-            'original_name' => $image['name'] ?? $name,
+            'name' => $image['name'] ?? $name,
             'type' => $image['type'],
             'size' => $image['size'],
             'target' => $_SERVER['DOCUMENT_ROOT'] . '/assets/images/' . $name,
@@ -167,19 +168,30 @@ abstract class Model implements \JsonSerializable
     }
 
 
-    public function fill($attributes = []): static
+    public function fill($attributes = [], $fillable = false): static
     {
-        if (empty($this->fillable)) {
+        if (!$fillable || empty($this->fillable)) {
             foreach ($attributes as $key => $value) {
                 $this->setAttributes($key, $value);
             }
         } else {
-            foreach (array_intersect_key($this->fillable, $attributes) as $key => $value) {
+            foreach (array_intersect_key($attributes, array_flip($this->fillable)) as $key => $value) {
                 $this->setAttributes($key, $value);
             }
         }
         return $this;
     }
+
+    public function getFillable(): array
+    {
+        return $this->fillable;
+    }
+
+    public function fillAble($attribute = [])
+    {
+        return $this->fill($attribute, true);
+    }
+
 
     public function setAttributes($key, $value): static
     {
@@ -262,6 +274,14 @@ abstract class Model implements \JsonSerializable
         return static::query()->getFromDatabase(is_array($columns) ? $columns : func_get_args());
     }
 
+    public static function destroy($values): \PDOStatement|bool
+    {
+        $values = is_array($values) ? $values : func_get_args();
+        $values = array_filter($values,fn($val)=>is_numeric($val));
+        if(empty($values)) return true;
+        return static::query()->delete($values);
+    }
+
     public function newInstance($attributes = [], $exists = false): static
     {
         $model = new static($attributes);
@@ -274,7 +294,6 @@ abstract class Model implements \JsonSerializable
 
     public function newFormBuilder($attributes = []): static
     {
-//        dump($attributes);
         $model = $this->newInstance([], true);
         $model->fill($attributes);
         return $model;
@@ -342,17 +361,22 @@ abstract class Model implements \JsonSerializable
 
     #[Pure] public function __get($name): mixed
     {
-        return $this->toArray()[$name];
+        if(isset($this->attributes[$name])) return $this->attributes[$name];
+        if(isset($this->relations[$name])) return $this->relations[$name];
+        return false;
+//        return $this->attributes[$name];
     }
 
     public function __isset(string $name): bool
     {
-        return isset($this->attributes[$name]);
+        if(isset($this->attributes[$name])) return true;
+        if(isset($this->relations[$name])) return true;
+        return false;
+//        return isset($this->attributes[$name]);
     }
 
     public static function __callStatic($method, $parameters): mixed
     {
-//        if(method_exists(self,$method)) return static::$method($parameters);
         return (new static)->$method(...$parameters);
     }
 
@@ -366,6 +390,9 @@ abstract class Model implements \JsonSerializable
         if (in_array($method, ['increment', 'decrement'])) {
             return $this->$method(...$parameters);
         }
+//        if(method_exists($this,$method)){
+//            return $this->{$method};
+//        }
         // $this->newQuery() - Tạo một query mới.
         return $this->forwardCallTo($this->newQuery(), $method, $parameters);
     }

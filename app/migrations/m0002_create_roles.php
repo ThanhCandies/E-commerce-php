@@ -17,7 +17,7 @@ class m0002_create_roles
 	public function down()
 	{
 		$db = Application::$app->db;
-		$SQL = "DROP TABLE users;";
+		$SQL = "DROP TABLE roles;";
 		$db->pdo->exec($SQL);
 	}
 }

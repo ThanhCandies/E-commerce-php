@@ -20,7 +20,6 @@ class Application
     public Session $session;
     public Database $db;
     public ?DbModel $user;
-    public View $view;
     public Blade $blade;
 
     public static Application $app;
@@ -37,7 +36,7 @@ class Application
         $this->request = new Request();
         $this->response = new Response();
         $this->session = new Session();
-        $this->view = new View();
+
         $this->blade = new Blade($rootPath . '/app/views', $rootPath . '/app/views/cache');
 
         $this->route = new Router($this->request, $this->response);
@@ -47,8 +46,12 @@ class Application
         // Get session user id = $_SESSION['user'] then get find user info from database;
         $primaryValue = $this->session->get('user');
         if ($primaryValue) {
-            $primaryKey = $this->userClass::primaryKey();
-            $this->user = $this->userClass::findOne([$primaryKey => $primaryValue]);
+            $user = $this->userClass::find($primaryValue);
+            if(!$user) {
+                $this->user = null;
+            } else {
+            $this->user = $this->userClass::find($primaryValue);
+            }
         } else {
             $this->user = null;
         }
@@ -88,7 +91,7 @@ class Application
 
     public static function isAdmin(): bool
     {
-        return static::$app->user->role === 'admin';
+        return static::$app->user->role_id === 1;
     }
 
     public function getRoutes(): array
@@ -101,7 +104,7 @@ class Application
         try {
             echo $this->route->resolve();
         } catch (\Exception $exception) {
-            dd($exception);
+//            dd($exception);
             // Throw error when has error while running;
             echo $this->blade->render('pages._error', ['exception' => $exception]);
         }

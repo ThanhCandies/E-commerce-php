@@ -138,24 +138,24 @@ $path = Application::$app->request->getPath();
 				</li>
 				<li class=" navigation-header"><span>Apps</span>
 				</li>
-				<li class="<?= $path===route('admin.users')?'active':'' ?> nav-item <?php echo e(route('admin.users')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.users')); ?>"><i class="fa fa-users"></i><span class="menu-item" data-i18n="List Users">List Users</span></a>
-				</li>
+
+
 				<li class="<?= $path===route('admin.products')?'active':'' ?> nav-item <?php echo e(route('admin.products')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.products')); ?>"><i class="fa fa-shopping-bag"></i><span class="menu-item" data-i18n="Products">Products</span></a>
 				</li>
 				<li class="<?= $path===route('admin.categories')?'active':'' ?> nav-item <?php echo e(route('admin.categories')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.categories')); ?>"><i class="fa fa-th"></i><span class="menu-item" data-i18n="Categories">Categories</span></a>
 				</li>
-				<li class=" navigation-header"><span>pages</span>
-				</li>
-				<li class="<?= $path===route('admin.profiles')?'active':'' ?> nav-item <?php echo e(route('admin.profiles')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.profiles')); ?>"><i class="feather icon-user"></i><span class="menu-title" data-i18n="Profile">Profile</span></a>
-				</li>
-				<li class="<?= $path===route('admin.settings')?'active':'' ?> nav-item <?php echo e(route('admin.settings')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.settings')); ?>"><i class="feather icon-settings"></i><span class="menu-title" data-i18n="Account Settings">Account Settings</span></a>
-				</li>
-				<li class="<?= $path===route('admin.faq')?'active':'' ?> nav-item <?php echo e(route('admin.faq')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.faq')); ?>"><i class="feather icon-help-circle"></i><span class="menu-title" data-i18n="FAQ">FAQ</span></a>
-				</li>
-				<li class="<?= $path===route('admin.knowledgebase')?'active':'' ?> nav-item <?php echo e(route('admin.knowledgebase')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.knowledgebase')); ?>"><i class="feather icon-info"></i><span class="menu-title" data-i18n="Knowledge Base">Knowledge Base</span></a>
-				</li>
-				<li class="<?= $path===route('admin.invoice')?'active':'' ?> nav-item <?php echo e(route('admin.invoice')?'':'disabled'); ?>"><a href="<?php echo e(route('admin.invoice')); ?>"><i class="feather icon-file"></i><span class="menu-title" data-i18n="Invoice">Invoice</span></a>
-				</li>
+
+
+
+
+
+
+
+
+
+
+
+
 			</ul>
 		</div>
 	</div>
@@ -172,7 +172,7 @@ $path = Application::$app->request->getPath();
 	<!-- BEGIN: Footer-->
 	<footer class="footer footer-static footer-light">
 		<p class="clearfix blue-grey lighten-2 mb-0"><span class="float-md-left d-block d-md-inline-block mt-25">COPYRIGHT &copy; 2020<a class="text-bold-800 grey darken-2" href="https://1.envato.market/pixinvent_portfolio" target="_blank">Pixinvent,</a>All rights Reserved</span><span class="float-md-right d-none d-md-block">Hand-crafted & Made with<i class="feather icon-heart pink"></i></span>
-			<button class="btn btn-primary btn-icon scroll-top" type="button"><i class="feather icon-arrow-up"></i></button>
+
 		</p>
 	</footer>
 	<!-- END: Footer-->

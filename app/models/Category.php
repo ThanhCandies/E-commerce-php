@@ -7,11 +7,13 @@ namespace App\models;
 class Category extends \App\core\DbModel
 {
     protected string $table = 'categories';
+    protected array $fillable = [
+        'name',
+        'description',
+        'image_id',
+        'published',
 
-    public static function attributes(): array
-    {
-       return ['id','name','description','image','published'];
-    }
+    ];
 
     public function rules(): array
     {

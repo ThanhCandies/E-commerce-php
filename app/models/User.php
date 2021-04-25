@@ -2,28 +2,35 @@
 
 namespace App\models;
 
+use App\core\DbModel;
 use App\core\UserModel;
 
-class User extends UserModel
+class User extends DbModel
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 1;
     const STATUS_DELETED = 2;
 
-    public string $firstname = '';
-    public string $lastname = '';
-    public string $email = '';
-    public int $status = self::STATUS_INACTIVE;
-    public string $username = '';
-    protected string $password = '';
-    protected string $confirmPassword = '';
-    protected bool $terms = false;
-    public $role = 2;
-    protected array $hidden = ['password','confirmPassword'];
+    protected array $fillable = [
+        'id',
+        'firstname',
+        'lastname',
+        'email',
+        'username',
+        'password',
+        'status',
+        'role'
+    ];
 
-    public function save():bool
+    protected array $hidden = [
+        'password',
+        'confirmPassword'
+    ];
+
+    public function save()
     {
-        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+        $this->setAttributes('password', password_hash($this->getAttribute('password'), PASSWORD_DEFAULT));
+//        dump($this->password);
         return parent::save();
     }
 
@@ -38,16 +45,6 @@ class User extends UserModel
             'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']],
             'terms' => [self::RULE_REQUIRED]
         ];
-    }
-
-    public static function attributes(): array
-    {
-        return ['firstname', 'lastname', 'email', 'password', 'username', 'status'];
-    }
-
-    public static function foreignKey(): array
-    {
-        return ['role'=>Role::class];
     }
 
     public function getDisplayName(): string

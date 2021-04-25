@@ -7,3 +7,9 @@ if (! function_exists('class_basename')) {
         return basename(str_replace('\\', '/', $class));
     }
 }
+if (! function_exists('session')) {
+    function session()
+    {
+        return \App\core\Application::$app->session;
+    }
+}

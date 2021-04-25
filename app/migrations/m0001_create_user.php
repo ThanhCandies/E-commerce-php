@@ -14,7 +14,8 @@ class m0001_create_user
 			lastname VARCHAR(255) NOT NULL,
 			username VARCHAR(255) NOT NULL UNIQUE,
 			password VARCHAR(255) NOT NULL,
-			status TINYINT NOT NULL,
+			role_id int NOT NULL DEFAULT 2,
+			status TINYINT NOT NULL DEFAULT 0,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		) ENGINE=INNODB;";
 		$db->pdo->exec($SQL);

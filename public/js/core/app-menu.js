@@ -13,14 +13,7 @@
 			let collapsed = this.collapsed;
 			let hidden = this.expanded;
 			console.log('hello');
-			// if (window.innerWidth < 1200) {
-			// 	console.log('open')
-			// 	if (hidden === true) {
-			// 		this.open();
-			// 	} else {
-			// 		this.hide();
-			// 	}
-			// } else {
+
 				if (collapsed === true) {
 					this.expand();
 				} else {

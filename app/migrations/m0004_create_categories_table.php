@@ -11,10 +11,11 @@ class m0004_create_categories_table extends \App\core\middlewares\Migration
             id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
             name varchar(255) NOT NULL UNIQUE,
             published boolean default false,
-            image varchar(255),
+            image_id varchar(255),
             description varchar(510),
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            CONSTRAINT FK_CategoryImage FOREIGN KEY (image_id) REFERENCES images(id)
         ) ENGINE=INNODB;";
         $db->pdo->exec($SQL);
     }

@@ -1,12 +1,12 @@
 
-<?php $__env->startSection('title',$exception->getMessage()); ?>
+<?php $__env->startSection('title',isset($exception)?$exception->getMessage():'404'); ?>
 <?php $__env->startSection('content'); ?>
 <section class="row flexbox-container mx-0">
     <div class="col-xl-7 cl-md-8 col-12 d-flex justify-content-center ">
         <div class="card-content">
             <div class="card-body text-center">
                 <img src="/assets/images/pages/404.png" class="img-fluid align-self-center" alt="branding logo">
-                <h1 class="font-large-2 my-1"><?php echo e($exception->getCode()); ?> - <?php echo e($exception->getMessage()); ?></h1>
+                <h1 class="font-large-2 my-1"><?php echo e(isset($exception)?$exception->getCode():'404'); ?> - <?php echo e(isset($exception)?$exception->getMessage():'Page Not Found!'); ?></h1>
                 <p class="p-2">
                     We're sorry, the page you requeste could not be found. PLease go back to homepage or contact us at
                     <a href="mailto:<?= $_ENV["EMAIL"] ?? "example@example.com" ?>"><?= $_ENV["EMAIL"] ?? "example@example.com" ?></a>

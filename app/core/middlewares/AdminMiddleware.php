@@ -21,10 +21,11 @@ class AdminMiddleware extends BaseMiddleware
     }
     public function execute()
     {
-        if (Application::isAdmin()) {
+
+        if (!Application::isGuest()&&!Application::isAdmin()) {
             if (empty($this->actions) || in_array(Application::$app->controller->action, $this->actions)) {
-                throw new NotFoundException();
-//                Application::$app->response->redirect('/login');
+//                throw new NotFoundException();
+                Application::$app->response->redirect('/');
             }
         }
     }

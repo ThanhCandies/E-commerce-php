@@ -10,9 +10,10 @@ class m0006_create_images_tables extends \App\core\middlewares\Migration
         $db = Application::$app->db;
         $SQL = "CREATE TABLE IF NOT EXISTS images( 
             id INT AUTO_INCREMENT NOT NULL,
-            original_name varchar(255) NOT NULL,
+            name varchar(255) NOT NULL,
            	url varchar(255),
             size int default 0,
+            type varchar(128) NOT NULL ,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY(id)

@@ -8,26 +8,12 @@ use JetBrains\PhpStorm\ArrayShape;
 
 class Image extends \App\core\DbModel
 {
-    public string $url = '';
-    public string $original_name = '';
-    public string $type = '';
-    public int|null $product_id = null;
-    public int $size = 0;
-    private string $target = "";
-
-    public function loadImage($image, int|null $product_id = null)
-    {
-        $name = time() . "_" . rand(0, 9999999) . "_" . $image['name'];
-        $this->url = $_ENV['DOMAIN'] . '/assets/images/' . $name;
-        $this->original_name = $image['name']??$name;
-        $this->product_id = $product_id;
-        $this->type = $image['type'];
-        $this->size = $image['size'];
-        $this->target= $_SERVER['DOCUMENT_ROOT'] . '/assets/images/'.$name;
-    }
+    public array $fillable=[
+       'id','name','url','size','type'
+    ];
     public function move(): bool
     {
-        return move_uploaded_file($_FILES['images']['tmp_name'], $this->target);
+        return move_uploaded_file($_FILES['images']['tmp_name'], $this->getAttribute('target'));
     }
 
     public static function attributes(): array

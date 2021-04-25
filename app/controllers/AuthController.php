@@ -15,34 +15,30 @@ class AuthController extends Controller
 
     public function __construct()
     {
-        $this->registerMiddleware(new AuthMiddleware(['profile']));
+        $this->registerMiddleware(new AuthMiddleware([]));
     }
 
     public function create():string
     {
-//        $this->setLayout("auth");
         return $this->render('pages.auth.login');
     }
 
-    public function store(Request $request, Response $response)
+    public function login(Request $request, Response $response)
     {
         $user = new LoginForm();
-        $user->loadData($request->getBody());
+        $user->fill($request->getBody());
 
         header("Content-type:application/json");
+
         if ($user->validate() && $user->authenticate()) {
 
-            $role = $user->role ?? 'user';
-            return json_encode(["success" => $user->isSuccess(), "redirect" => $role === 'user' ? "/" : "/admin"]);
+            $role = $user->role_id ?? 2;
+            return json_encode(["success" => $user->isSuccess(), "redirect" =>(int) $role === 1 ? "/admin" : "/"]);
         }
 
         return json_encode(["success" => $user->isSuccess(), "err" => $user->getErrors()]);
     }
 
-    public function profile(Request $request)
-    {
-        return json_encode(User::findAll(['role']));
-	}
 
     public function destroy(Request $request, Response $response)
     {

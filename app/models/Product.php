@@ -11,6 +11,16 @@ class Product extends DbModel
 {
     public string $table = 'products';
 
+    protected array $fillable = [
+        'name',
+        'price',
+        'category_id',
+        'image_id',
+        'published',
+
+    ];
+
+
     #[ArrayShape(['name' => "array"])] public function rules(): array
     {
         return [
@@ -18,3 +28,7 @@ class Product extends DbModel
         ];
     }
 }
+
+/**
+ * @param
+ */

@@ -352,7 +352,8 @@ table.data-thumb-view.dataTable tbody tr td {
   padding-top : 0.714rem;
   padding-bottom : 0.714rem;
 }
-table.data-thumb-view.dataTable tbody tr td.product-img img {
+table.data-thumb-view.dataTable tbody tr td.product-img img,
+table.data-list-view.dataTable tbody tr td.product-img img {
   height : 7.857rem;
 }
 
